@@ -708,6 +708,134 @@ body {
 .slot-pick-btn:hover { background: var(--sage-light); border-color: var(--sage); }
 .slot-pick-btn.occupied { background: #f0f0f0; color: var(--text-light); }
 
+/* ===== ADD RECIPE FORM ===== */
+.add-recipe-form { max-width: 600px; margin: 0 auto; }
+
+.add-recipe-form .form-group {
+  margin-bottom: 16px;
+}
+
+.add-recipe-form label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.add-recipe-form input,
+.add-recipe-form textarea,
+.add-recipe-form select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 0.9rem;
+}
+
+.add-recipe-form input:focus,
+.add-recipe-form textarea:focus {
+  border-color: var(--sage);
+  outline: none;
+}
+
+.add-recipe-form textarea { resize: vertical; min-height: 80px; }
+
+.import-url-section {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+
+.import-url-section h3 {
+  font-size: 1rem;
+  color: var(--sage-dark);
+  margin-bottom: 8px;
+}
+
+.import-url-row {
+  display: flex;
+  gap: 8px;
+}
+
+.import-url-row input { flex: 1; }
+
+.import-status {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.import-status.error { color: var(--danger); }
+
+.manual-form-section {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.manual-form-section h3 {
+  font-size: 1rem;
+  color: var(--sage-dark);
+  margin-bottom: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--sage);
+}
+
+.ingredient-rows { margin-bottom: 8px; }
+
+.ingredient-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 6px;
+  margin-bottom: 6px;
+  align-items: center;
+}
+
+.ingredient-row input, .ingredient-row select {
+  padding: 6px 8px;
+  font-size: 0.85rem;
+}
+
+.ingredient-row .remove-ing {
+  border: none;
+  background: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px;
+}
+
+.ingredient-row .remove-ing:hover { color: var(--danger); }
+
 /* ===== TOAST ===== */
 .toast {
   position: fixed;
@@ -839,6 +967,75 @@ body {
         <button class="filter-btn" data-filter="time" data-value="60">Under 60m</button>
       </div>
       <input type="text" class="search-box" placeholder="Search recipes..." id="recipe-search">
+      <button class="btn btn-primary" onclick="App.AddRecipe.show()" style="margin-left:auto;">+ Add Recipe</button>
+    </div>
+    <div id="add-recipe-panel" style="display:none;">
+      <div class="add-recipe-form">
+        <div class="import-url-section">
+          <h3>Import from URL</h3>
+          <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:10px;">Paste a recipe link and we'll try to pull in the details automatically.</p>
+          <div class="import-url-row">
+            <input type="text" id="import-url" placeholder="https://www.example.com/recipe/...">
+            <button class="btn btn-primary" onclick="App.AddRecipe.importFromUrl()">Import</button>
+          </div>
+          <div class="import-status" id="import-status"></div>
+        </div>
+
+        <div class="manual-form-section">
+          <h3>Recipe Details</h3>
+          <div class="form-group">
+            <label>Recipe Name</label>
+            <input type="text" id="ar-name" placeholder="e.g. Lemon Garlic Shrimp">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Meal Type</label>
+              <select id="ar-mealtype">
+                <option value="dinner">Dinner</option>
+                <option value="lunch">Lunch</option>
+                <option value="both">Both Lunch & Dinner</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Difficulty</label>
+              <select id="ar-difficulty">
+                <option value="easy">Easy</option>
+                <option value="moderate">Moderate</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Cook Time (minutes)</label>
+              <input type="number" id="ar-time" placeholder="30" value="30">
+            </div>
+            <div class="form-group">
+              <label>Contains (flag these)</label>
+              <div class="checkbox-group">
+                <label><input type="checkbox" id="ar-dairy"> Dairy</label>
+                <label><input type="checkbox" id="ar-tomatoes"> Tomatoes</label>
+                <label><input type="checkbox" id="ar-spinach"> Spinach</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Short Description</label>
+            <input type="text" id="ar-desc" placeholder="A quick weeknight meal with...">
+          </div>
+          <div class="form-group">
+            <label>Ingredients (one per line — e.g. "1 lb chicken breast" or "2 tbsp olive oil")</label>
+            <textarea id="ar-ingredients" rows="8" placeholder="1 lb chicken breast&#10;2 tbsp olive oil&#10;3 garlic cloves&#10;1 cup white rice&#10;1 lemon"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Instructions (one step per line)</label>
+            <textarea id="ar-instructions" rows="6" placeholder="Season chicken with salt and pepper.&#10;Sear in a hot skillet 6 min per side.&#10;Serve over rice with lemon."></textarea>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:16px;">
+            <button class="btn btn-primary" onclick="App.AddRecipe.save()">Save Recipe</button>
+            <button class="btn btn-secondary" onclick="App.AddRecipe.hide()">Cancel</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="recipe-grid" class="recipe-grid"></div>
   </div>
@@ -961,6 +1158,15 @@ const App = {
 
   init() {
     this.recipes = JSON.parse(document.getElementById('recipe-data').textContent);
+    // Load custom recipes from localStorage
+    try {
+      const custom = JSON.parse(localStorage.getItem('customRecipes') || '[]');
+      custom.forEach(r => {
+        if (!this.recipes.find(existing => existing.id === r.id)) {
+          this.recipes.push(r);
+        }
+      });
+    } catch(e) {}
     // Load any saved state from localStorage first
     try {
       const saved = JSON.parse(localStorage.getItem('mealPlannerState'));
@@ -1013,6 +1219,18 @@ const App = {
           if (data && !App.syncing) {
             if (data.mealPlan) App.state.mealPlan = data.mealPlan;
             if (data.groceryOverrides) App.state.groceryOverrides = data.groceryOverrides;
+            // Load custom recipes from Firebase
+            if (data.customRecipes) {
+              Object.values(data.customRecipes).forEach(r => {
+                if (!App.recipes.find(existing => existing.id === r.id)) {
+                  App.recipes.push(r);
+                }
+              });
+              // Also save to localStorage
+              const allCustom = Object.values(data.customRecipes);
+              localStorage.setItem('customRecipes', JSON.stringify(allCustom));
+              App.RecipeBrowser.render();
+            }
             App.Planner.render();
             if (document.querySelector('#view-grocery.active')) {
               App.GroceryList.generate();
@@ -1449,6 +1667,225 @@ const App = {
       }
       App.Firebase.save();
       this.render();
+    }
+  },
+
+  // ===== ADD RECIPE =====
+  AddRecipe: {
+    show() {
+      document.getElementById('add-recipe-panel').style.display = 'block';
+      document.getElementById('recipe-grid').style.display = 'none';
+      document.querySelector('.filters').style.display = 'none';
+      // Clear form
+      ['ar-name','ar-desc','ar-ingredients','ar-instructions','import-url'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('ar-time').value = '30';
+      document.getElementById('ar-dairy').checked = false;
+      document.getElementById('ar-tomatoes').checked = false;
+      document.getElementById('ar-spinach').checked = false;
+      document.getElementById('import-status').textContent = '';
+    },
+
+    hide() {
+      document.getElementById('add-recipe-panel').style.display = 'none';
+      document.getElementById('recipe-grid').style.display = '';
+      document.querySelector('.filters').style.display = '';
+    },
+
+    async importFromUrl() {
+      const url = document.getElementById('import-url').value.trim();
+      const statusEl = document.getElementById('import-status');
+      if (!url) { statusEl.textContent = 'Please enter a URL.'; statusEl.className = 'import-status error'; return; }
+
+      statusEl.textContent = 'Fetching recipe...';
+      statusEl.className = 'import-status';
+
+      try {
+        // Use a CORS proxy to fetch the page
+        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error('Could not fetch URL');
+        const html = await response.text();
+
+        // Try to find JSON-LD recipe data
+        const jsonLdMatches = html.match(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+        let recipe = null;
+
+        if (jsonLdMatches) {
+          for (const match of jsonLdMatches) {
+            try {
+              const jsonStr = match.replace(/<script[^>]*>/, '').replace(/<\/script>/, '').trim();
+              let data = JSON.parse(jsonStr);
+              // Handle arrays
+              if (Array.isArray(data)) {
+                data = data.find(d => d['@type'] === 'Recipe') || data[0];
+              }
+              // Handle @graph
+              if (data['@graph']) {
+                data = data['@graph'].find(d => d['@type'] === 'Recipe');
+              }
+              if (data && (data['@type'] === 'Recipe' || (Array.isArray(data['@type']) && data['@type'].includes('Recipe')))) {
+                recipe = data;
+                break;
+              }
+            } catch(e) {}
+          }
+        }
+
+        if (recipe) {
+          // Fill in the form
+          document.getElementById('ar-name').value = recipe.name || '';
+          document.getElementById('ar-desc').value = recipe.description ? recipe.description.replace(/<[^>]*>/g, '').substring(0, 200) : '';
+
+          // Cook time
+          if (recipe.totalTime || recipe.cookTime) {
+            const timeStr = recipe.totalTime || recipe.cookTime;
+            const mins = this.parseISO8601Duration(timeStr);
+            if (mins) document.getElementById('ar-time').value = mins;
+          }
+
+          // Ingredients
+          if (recipe.recipeIngredient && Array.isArray(recipe.recipeIngredient)) {
+            document.getElementById('ar-ingredients').value = recipe.recipeIngredient.join('\n');
+          }
+
+          // Instructions
+          if (recipe.recipeInstructions) {
+            let steps = recipe.recipeInstructions;
+            if (typeof steps === 'string') {
+              steps = steps.replace(/<[^>]*>/g, '').split(/\.\s+/).filter(s => s.trim());
+            } else if (Array.isArray(steps)) {
+              steps = steps.map(s => {
+                if (typeof s === 'string') return s;
+                if (s.text) return s.text;
+                if (s.itemListElement) return s.itemListElement.map(i => i.text || i).join('\n');
+                return s.name || '';
+              });
+            }
+            document.getElementById('ar-instructions').value = steps.flat().map(s => s.replace(/<[^>]*>/g, '').trim()).filter(s => s).join('\n');
+          }
+
+          // Check for dairy/tomatoes/spinach in ingredients
+          const ingText = (recipe.recipeIngredient || []).join(' ').toLowerCase();
+          document.getElementById('ar-dairy').checked = /cheese|butter|cream|milk|yogurt|parmesan|mozzarella|feta/.test(ingText);
+          document.getElementById('ar-tomatoes').checked = /tomato/.test(ingText);
+          document.getElementById('ar-spinach').checked = /spinach/.test(ingText);
+
+          statusEl.textContent = 'Recipe imported! Review the details below and click Save.';
+          statusEl.className = 'import-status';
+        } else {
+          statusEl.textContent = 'Could not find recipe data on that page. Try filling in the details manually below.';
+          statusEl.className = 'import-status error';
+        }
+      } catch(e) {
+        console.error('Import error:', e);
+        statusEl.textContent = 'Could not fetch that URL. Try a different link, or fill in the details manually below.';
+        statusEl.className = 'import-status error';
+      }
+    },
+
+    parseISO8601Duration(str) {
+      if (!str) return null;
+      const match = str.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+      if (match) {
+        return (parseInt(match[1] || 0) * 60) + parseInt(match[2] || 0);
+      }
+      // Try plain number
+      const num = parseInt(str);
+      return isNaN(num) ? null : num;
+    },
+
+    parseIngredientLine(line) {
+      line = line.trim();
+      if (!line) return null;
+
+      // Try to extract qty, unit, and item
+      const match = line.match(/^([\d./½¼¾⅓⅔⅛]+(?:\s*[-–]\s*[\d./]+)?)\s*(lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoon|tablespoons|tsp|teaspoon|teaspoons|can|cans|bunch|bag|whole|cloves?|stalks?|heads?)?\s*[.,]?\s*(.+)/i);
+
+      if (match) {
+        let qty = match[1].replace('½', '.5').replace('¼', '.25').replace('¾', '.75').replace('⅓', '.33').replace('⅔', '.67').replace('⅛', '.125');
+        // Handle fractions like 1/2
+        if (qty.includes('/')) {
+          const parts = qty.split('/');
+          qty = parseFloat(parts[0]) / parseFloat(parts[1]);
+        } else {
+          qty = parseFloat(qty) || 1;
+        }
+        // Halve for 2 servings (most recipes serve 4+)
+        // Actually don't - user can adjust
+
+        let unit = (match[2] || 'whole').toLowerCase();
+        // Normalize units
+        unit = unit.replace(/pounds?/, 'lb').replace(/lbs/, 'lb').replace(/ounces?/, 'oz').replace(/cups?/, 'cup').replace(/tablespoons?/, 'tbsp').replace(/teaspoons?/, 'tsp').replace(/cans/, 'can').replace(/cloves?/, 'whole').replace(/stalks?/, 'whole').replace(/heads?/, 'whole');
+
+        const item = match[3].trim().replace(/,\s*$/, '');
+
+        // Guess section
+        const section = this.guessSection(item);
+
+        return { item, qty, unit, section };
+      }
+
+      // Fallback: treat the whole line as an item
+      return { item: line, qty: 1, unit: 'whole', section: this.guessSection(line) };
+    },
+
+    guessSection(item) {
+      const lower = item.toLowerCase();
+      if (/chicken|beef|steak|pork|lamb|salmon|shrimp|tuna|cod|sausage|turkey|tofu|ground/.test(lower)) return 'protein';
+      if (/milk|cheese|butter|cream|yogurt|egg|parmesan|mozzarella|feta/.test(lower)) return 'dairy';
+      if (/frozen|edamame/.test(lower)) return 'frozen';
+      if (/cumin|paprika|oregano|thyme|rosemary|chili powder|curry|cinnamon|seasoning|pepper flakes/.test(lower)) return 'spices';
+      if (/oil|vinegar|sauce|tamari|soy|honey|rice$|noodle|pasta|broth|stock|beans|can|flour|sugar|cornstarch|peanut butter|coconut milk|tortilla/.test(lower)) return 'pantry';
+      return 'produce';
+    },
+
+    save() {
+      const name = document.getElementById('ar-name').value.trim();
+      if (!name) { App.toast('Please enter a recipe name'); return; }
+
+      const mealTypeVal = document.getElementById('ar-mealtype').value;
+      const mealType = mealTypeVal === 'both' ? ['lunch', 'dinner'] : [mealTypeVal];
+
+      const ingredientLines = document.getElementById('ar-ingredients').value.split('\n').filter(l => l.trim());
+      const ingredients = ingredientLines.map(l => this.parseIngredientLine(l)).filter(Boolean);
+
+      const instructionLines = document.getElementById('ar-instructions').value.split('\n').filter(l => l.trim());
+
+      const recipe = {
+        id: 'custom-' + Date.now(),
+        name: name,
+        mealType: mealType,
+        difficulty: document.getElementById('ar-difficulty').value,
+        cookTimeMinutes: parseInt(document.getElementById('ar-time').value) || 30,
+        description: document.getElementById('ar-desc').value.trim() || name,
+        instructions: instructionLines,
+        ingredients: ingredients,
+        flags: {
+          dairy: document.getElementById('ar-dairy').checked,
+          tomatoes: document.getElementById('ar-tomatoes').checked,
+          spinach: document.getElementById('ar-spinach').checked
+        },
+        custom: true
+      };
+
+      // Add to local recipes array
+      App.recipes.push(recipe);
+
+      // Save to Firebase
+      if (App.dbRef) {
+        App.dbRef.child('customRecipes').child(recipe.id).set(recipe);
+      }
+
+      // Also save to localStorage
+      const customRecipes = JSON.parse(localStorage.getItem('customRecipes') || '[]');
+      customRecipes.push(recipe);
+      localStorage.setItem('customRecipes', JSON.stringify(customRecipes));
+
+      App.toast(`"${name}" added!`);
+      this.hide();
+      App.RecipeBrowser.render();
     }
   },
 
