@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meal Planner</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽</text></svg>">
+<style>
+:root {
+  --sage: #7c9a82;
+  --sage-light: #e8f0e9;
+  --sage-dark: #5a7a60;
+  --warm: #f5f0eb;
+  --warm-dark: #e8ddd3;
+  --text: #2d3436;
+  --text-light: #636e72;
+  --white: #ffffff;
+  --border: #dfe6e9;
+  --danger: #d63031;
+  --warning: #fdcb6e;
+  --warning-bg: #fef9e7;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --radius: 10px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--warm);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ===== SETUP SCREEN ===== */
+.setup-screen {
+  max-width: 560px;
+  margin: 60px auto;
+  padding: 40px;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+}
+
+.setup-screen h1 {
+  color: var(--sage-dark);
+  margin-bottom: 8px;
+  font-size: 1.6rem;
+}
+
+.setup-screen p {
+  color: var(--text-light);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.setup-screen .step {
+  background: var(--warm);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.setup-screen .step-number {
+  display: inline-block;
+  background: var(--sage);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 24px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.setup-screen .step h3 {
+  display: inline;
+  font-size: 0.95rem;
+}
+
+.setup-screen .step p {
+  margin: 8px 0 0 32px;
+  font-size: 0.88rem;
+}
+
+.setup-screen textarea {
+  width: 100%;
+  height: 140px;
+  padding: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  margin: 12px 0;
+  resize: vertical;
+}
+
+.setup-screen textarea:focus {
+  border-color: var(--sage);
+  outline: none;
+}
+
+.setup-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  display: none;
+}
+
+.sync-status {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-light);
+  background: var(--white);
+  padding: 4px 12px;
+  border-radius: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+}
+
+.sync-dot.connected { background: #27ae60; }
+.sync-dot.syncing { background: var(--warning); animation: pulse 1s infinite; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* ===== NAV ===== */
+.nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.nav-brand {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--sage-dark);
+  margin-right: 20px;
+  padding: 16px 0;
+  white-space: nowrap;
+}
+
+.nav-tab {
+  padding: 16px 20px;
+  border: none;
+  background: none;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  color: var(--text-light);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active {
+  color: var(--sage-dark);
+  border-bottom-color: var(--sage);
+  font-weight: 600;
+}
+
+/* ===== MAIN ===== */
+.app-container { display: none; }
+.app-container.active { display: block; }
+.view { display: none; padding: 24px; max-width: 1400px; margin: 0 auto; }
+.view.active { display: block; }
+
+/* ===== RECIPE BROWSER ===== */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  gap: 4px;
+  background: var(--white);
+  border-radius: 8px;
+  padding: 4px;
+  border: 1px solid var(--border);
+}
+
+.filter-group label {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--text-light);
+  transition: all 0.15s;
+}
+
+.filter-btn.active {
+  background: var(--sage);
+  color: white;
+}
+
+.filter-btn:hover:not(.active) {
+  background: var(--sage-light);
+}
+
+.search-box {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  width: 220px;
+  outline: none;
+}
+
+.search-box:focus { border-color: var(--sage); }
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.recipe-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  cursor: grab;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.recipe-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.recipe-card.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.recipe-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.recipe-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.recipe-badges {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-easy { background: #e8f5e9; color: #2e7d32; }
+.badge-moderate { background: #fff3e0; color: #e65100; }
+
+.recipe-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.recipe-description {
+  font-size: 0.88rem;
+  color: var(--text-light);
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.recipe-flags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.flag {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--warning-bg);
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.recipe-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.btn-add-to-plan {
+  padding: 6px 12px;
+  background: var(--sage);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-add-to-plan:hover { background: var(--sage-dark); }
+
+.btn-view-recipe {
+  padding: 6px 12px;
+  background: var(--sage-light);
+  color: var(--sage-dark);
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+/* ===== WEEKLY PLANNER ===== */
+.planner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.planner-header h2 {
+  font-size: 1.3rem;
+  color: var(--sage-dark);
+}
+
+.planner-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.btn-primary { background: var(--sage); color: white; }
+.btn-primary:hover { background: var(--sage-dark); }
+.btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--sage-light); }
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+}
+
+.day-column {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.day-header {
+  background: var(--sage);
+  color: white;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.meal-slot {
+  padding: 12px;
+  min-height: 100px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.meal-slot:last-child { border-bottom: none; }
+
+.meal-slot.drag-over {
+  background: var(--sage-light);
+  border: 2px dashed var(--sage);
+}
+
+.slot-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-light);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.slot-empty {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  color: #b2bec3;
+  font-size: 0.82rem;
+}
+
+.slot-filled {
+  background: var(--sage-light);
+  border-radius: 8px;
+  padding: 10px;
+  position: relative;
+  cursor: pointer;
+}
+
+.slot-filled .recipe-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding-right: 24px;
+}
+
+.slot-filled .recipe-time {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+.slot-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.1);
+  color: var(--text-light);
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-remove:hover { background: var(--danger); color: white; }
+
+.reduce-warning {
+  background: var(--warning-bg);
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  font-size: 0.88rem;
+  color: #856404;
+}
+
+/* ===== GROCERY LIST ===== */
+.grocery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.grocery-header h2 {
+  font-size: 1.3rem;
+  color: var(--sage-dark);
+}
+
+.grocery-section {
+  background: var(--white);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.grocery-section-header {
+  background: var(--sage-light);
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--sage-dark);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.grocery-section-header:hover { background: #dce8dd; }
+
+.grocery-section-header .toggle {
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+}
+
+.grocery-items { padding: 8px 0; }
+
+.grocery-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.grocery-item:last-child { border-bottom: none; }
+.grocery-item:hover { background: #f8f9fa; }
+
+.grocery-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--sage);
+  cursor: pointer;
+}
+
+.grocery-item.checked .item-name {
+  text-decoration: line-through;
+  color: var(--text-light);
+}
+
+.item-name { flex: 1; font-size: 0.92rem; }
+
+.item-qty {
+  font-size: 0.88rem;
+  color: var(--text-light);
+  min-width: 80px;
+  text-align: right;
+}
+
+.item-remove {
+  border: none;
+  background: none;
+  color: #ddd;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.item-remove:hover { color: var(--danger); background: #ffeaea; }
+
+.add-item-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.add-item-row input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 0.88rem;
+}
+
+.add-item-row button {
+  padding: 6px 14px;
+  background: var(--sage-light);
+  color: var(--sage-dark);
+  border: 1px solid var(--sage);
+  border-radius: 6px;
+  font-family: var(--font);
+  cursor: pointer;
+}
+
+.grocery-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-light);
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--white);
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.modal h3 { font-size: 1.2rem; margin-bottom: 4px; }
+
+.modal-meta {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.modal-section { margin-bottom: 16px; }
+
+.modal-section h4 {
+  font-size: 0.9rem;
+  color: var(--sage-dark);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-section ul { list-style: disc; padding-left: 20px; }
+.modal-section li { font-size: 0.9rem; line-height: 1.6; }
+.modal-section ol { padding-left: 20px; }
+.modal-section ol li { margin-bottom: 6px; }
+
+.modal-close {
+  float: right;
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.modal-close:hover { color: var(--text); }
+
+.slot-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.slot-pick-btn {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.slot-pick-btn:hover { background: var(--sage-light); border-color: var(--sage); }
+.slot-pick-btn.occupied { background: #f0f0f0; color: var(--text-light); }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--sage-dark);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  z-index: 300;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .week-grid { grid-template-columns: 1fr; }
+  .day-column { display: grid; grid-template-columns: auto 1fr 1fr; }
+  .day-header { display: flex; align-items: center; padding: 10px 14px; }
+  .meal-slot { min-height: auto; border-bottom: none; border-left: 1px solid var(--border); }
+}
+
+@media (max-width: 600px) {
+  .nav { flex-wrap: wrap; padding: 0 12px; }
+  .nav-brand { width: 100%; padding: 12px 0 0; margin-right: 0; }
+  .nav-tab { padding: 10px 14px; font-size: 0.85rem; }
+  .view { padding: 16px; }
+  .recipe-grid { grid-template-columns: 1fr; }
+  .filters { flex-direction: column; align-items: stretch; }
+  .search-box { width: 100%; }
+  .day-column { grid-template-columns: 1fr; }
+  .slot-picker { grid-template-columns: 1fr; }
+  .sync-status { top: auto; bottom: 70px; right: 12px; }
+}
+
+@media print {
+  .nav, .filters, .btn, .item-remove, .add-item-row, .planner-actions, .sync-status { display: none !important; }
+  .view { display: none !important; }
+  .view.print-target { display: block !important; }
+  .grocery-section { box-shadow: none; break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="setup-screen">
+  <h1>Meal Planner Setup</h1>
+  <p>One-time setup to connect your shared meal planner. Follow the steps below, then paste your Firebase config.</p>
+
+  <div class="step">
+    <span class="step-number">1</span>
+    <h3>Create a Firebase project (free)</h3>
+    <p>Go to <strong>console.firebase.google.com</strong>, click "Add project," name it "Meal Planner," and click through (you can disable Google Analytics).</p>
+  </div>
+
+  <div class="step">
+    <span class="step-number">2</span>
+    <h3>Add a web app</h3>
+    <p>In your project, click the web icon <strong>&lt;/&gt;</strong>, name it "Meal Planner," skip hosting, and click "Register app."</p>
+  </div>
+
+  <div class="step">
+    <span class="step-number">3</span>
+    <h3>Copy the config</h3>
+    <p>You'll see a code block with <code>firebaseConfig = { ... }</code>. Copy <strong>just the part inside the curly braces</strong> (including the braces) and paste below.</p>
+  </div>
+
+  <div class="step">
+    <span class="step-number">4</span>
+    <h3>Enable Realtime Database</h3>
+    <p>In the Firebase console sidebar, click "Build" then "Realtime Database." Click "Create Database," pick any location, and select <strong>"Start in test mode."</strong></p>
+  </div>
+
+  <textarea id="firebase-config-input" placeholder='Paste your Firebase config here, e.g.:
+{
+  apiKey: "AIza...",
+  authDomain: "meal-planner-xxxxx.firebaseapp.com",
+  databaseURL: "https://meal-planner-xxxxx-default-rtdb.firebaseio.com",
+  projectId: "meal-planner-xxxxx",
+  storageBucket: "meal-planner-xxxxx.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
+}'></textarea>
+
+  <div class="setup-error" id="setup-error"></div>
+
+  <button class="btn btn-primary" onclick="App.Setup.connect()" style="width:100%;">Connect & Start Planning</button>
+</div>
+
+<!-- SYNC STATUS -->
+<div id="sync-status" class="sync-status" style="display:none;">
+  <span class="sync-dot" id="sync-dot"></span>
+  <span id="sync-text">Connecting...</span>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-container" class="app-container">
+  <nav class="nav">
+    <div class="nav-brand">Meal Planner</div>
+    <button class="nav-tab active" data-view="recipes">Recipes</button>
+    <button class="nav-tab" data-view="planner">Week Plan</button>
+    <button class="nav-tab" data-view="grocery">Grocery List</button>
+  </nav>
+
+  <div id="view-recipes" class="view active">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Meal:</label>
+        <button class="filter-btn active" data-filter="mealType" data-value="all">All</button>
+        <button class="filter-btn" data-filter="mealType" data-value="lunch">Lunch</button>
+        <button class="filter-btn" data-filter="mealType" data-value="dinner">Dinner</button>
+      </div>
+      <div class="filter-group">
+        <label>Difficulty:</label>
+        <button class="filter-btn active" data-filter="difficulty" data-value="all">All</button>
+        <button class="filter-btn" data-filter="difficulty" data-value="easy">Easy</button>
+        <button class="filter-btn" data-filter="difficulty" data-value="moderate">Moderate</button>
+      </div>
+      <div class="filter-group">
+        <label>Time:</label>
+        <button class="filter-btn active" data-filter="time" data-value="all">All</button>
+        <button class="filter-btn" data-filter="time" data-value="30">Under 30m</button>
+        <button class="filter-btn" data-filter="time" data-value="60">Under 60m</button>
+      </div>
+      <input type="text" class="search-box" placeholder="Search recipes..." id="recipe-search">
+    </div>
+    <div id="recipe-grid" class="recipe-grid"></div>
+  </div>
+
+  <div id="view-planner" class="view">
+    <div class="planner-header">
+      <h2>Weekly Meal Plan</h2>
+      <div class="planner-actions">
+        <button class="btn btn-secondary" onclick="App.Planner.clearAll()">Clear Week</button>
+        <button class="btn btn-primary" onclick="App.switchTab('grocery'); App.GroceryList.generate();">Build Grocery List</button>
+      </div>
+    </div>
+    <div id="week-grid" class="week-grid"></div>
+    <div id="reduce-warning" class="reduce-warning" style="display:none;"></div>
+  </div>
+
+  <div id="view-grocery" class="view">
+    <div class="grocery-header">
+      <h2>Grocery List</h2>
+      <div class="planner-actions">
+        <button class="btn btn-secondary" onclick="App.Export.toClipboard()">Copy List</button>
+        <button class="btn btn-primary" onclick="App.Export.fullPlanToClipboard()">Copy Full Plan</button>
+      </div>
+    </div>
+    <div id="grocery-list"></div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- FIREBASE SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+<!-- RECIPE DATA -->
+<script type="application/json" id="recipe-data">
+[
+  {"id":"lemon-herb-chicken-rice","name":"Lemon Herb Chicken & Rice","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":35,"description":"Bright, herby pan-seared chicken over fluffy rice with a squeeze of lemon.","instructions":["Season chicken thighs with salt, pepper, dried oregano, and garlic powder.","Heat olive oil in a skillet over medium-high heat. Cook chicken 6 min per side until golden and cooked through.","Meanwhile, cook rice per package directions.","Squeeze lemon over chicken. Serve over rice with a side of steamed green beans."],"ingredients":[{"item":"chicken thighs (boneless)","qty":1,"unit":"lb","section":"protein"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"lemon","qty":1,"unit":"whole","section":"produce"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"},{"item":"garlic powder","qty":1,"unit":"tsp","section":"spices"},{"item":"dried oregano","qty":1,"unit":"tsp","section":"spices"},{"item":"green beans","qty":0.5,"unit":"lb","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"beef-stir-fry","name":"Beef & Veggie Stir Fry","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":25,"description":"Quick stir fry with tender beef strips and crisp vegetables over rice.","instructions":["Slice beef into thin strips. Toss with tamari, cornstarch, and a pinch of sugar.","Heat oil in a wok or large skillet over high heat. Sear beef 2 min, set aside.","Stir fry bell peppers, broccoli, and snap peas for 3-4 min.","Return beef, add tamari and sesame oil. Toss and serve over rice."],"ingredients":[{"item":"flank steak","qty":0.75,"unit":"lb","section":"protein"},{"item":"tamari (gluten-free soy sauce)","qty":3,"unit":"tbsp","section":"pantry"},{"item":"cornstarch","qty":1,"unit":"tbsp","section":"pantry"},{"item":"bell peppers","qty":2,"unit":"whole","section":"produce"},{"item":"broccoli florets","qty":2,"unit":"cup","section":"produce"},{"item":"snap peas","qty":1,"unit":"cup","section":"produce"},{"item":"sesame oil","qty":1,"unit":"tbsp","section":"pantry"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"salmon-sweet-potato","name":"Roasted Salmon & Sweet Potato","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":30,"description":"Simple sheet-pan salmon with roasted sweet potatoes and asparagus.","instructions":["Preheat oven to 425F. Cube sweet potatoes, toss with oil, salt, and pepper. Roast 10 min.","Season salmon fillets with salt, pepper, and a drizzle of olive oil.","Add salmon and asparagus to the sheet pan. Roast another 12-15 min.","Squeeze lemon over everything before serving."],"ingredients":[{"item":"salmon fillets","qty":0.75,"unit":"lb","section":"protein"},{"item":"sweet potatoes","qty":2,"unit":"whole","section":"produce"},{"item":"asparagus","qty":1,"unit":"bunch","section":"produce"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"},{"item":"lemon","qty":1,"unit":"whole","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"chicken-coconut-curry","name":"Coconut Chicken Curry","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":35,"description":"Creamy, aromatic coconut curry with tender chicken and vegetables.","instructions":["Dice chicken into bite-sized pieces. Season with curry powder, salt, and pepper.","Saute diced onion in oil until soft. Add garlic and ginger, cook 1 min.","Add chicken, cook 5 min until browned.","Pour in coconut milk and diced potatoes. Simmer 15-20 min until potatoes are tender. Serve over rice."],"ingredients":[{"item":"chicken breast","qty":1,"unit":"lb","section":"protein"},{"item":"coconut milk (canned)","qty":1,"unit":"can","section":"pantry"},{"item":"yellow onion","qty":1,"unit":"whole","section":"produce"},{"item":"garlic cloves","qty":3,"unit":"whole","section":"produce"},{"item":"fresh ginger","qty":1,"unit":"tbsp","section":"produce"},{"item":"curry powder","qty":2,"unit":"tbsp","section":"spices"},{"item":"potatoes","qty":2,"unit":"whole","section":"produce"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"turkey-taco-bowls","name":"Turkey Taco Bowls","mealType":["dinner","lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"Seasoned ground turkey over rice with all the taco toppings.","instructions":["Brown ground turkey in a skillet, breaking it up as it cooks.","Add taco seasoning (cumin, chili powder, garlic powder, paprika, salt) and a splash of water. Simmer 5 min.","Serve over rice with avocado, shredded lettuce, salsa, and lime."],"ingredients":[{"item":"ground turkey","qty":1,"unit":"lb","section":"protein"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"romaine lettuce","qty":2,"unit":"cup","section":"produce"},{"item":"lime","qty":1,"unit":"whole","section":"produce"},{"item":"cumin","qty":1,"unit":"tsp","section":"spices"},{"item":"chili powder","qty":1,"unit":"tsp","section":"spices"},{"item":"garlic powder","qty":0.5,"unit":"tsp","section":"spices"},{"item":"paprika","qty":0.5,"unit":"tsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"shrimp-garlic-noodles","name":"Garlic Shrimp Rice Noodles","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":20,"description":"Garlicky shrimp tossed with rice noodles and fresh vegetables.","instructions":["Cook rice noodles per package directions. Drain and rinse.","Saute shrimp in olive oil with lots of minced garlic, 2-3 min per side.","Toss noodles with shrimp, tamari, a squeeze of lime, and sliced scallions.","Add shredded carrots and serve."],"ingredients":[{"item":"shrimp (peeled, deveined)","qty":0.75,"unit":"lb","section":"protein"},{"item":"rice noodles","qty":8,"unit":"oz","section":"pantry"},{"item":"garlic cloves","qty":5,"unit":"whole","section":"produce"},{"item":"tamari (gluten-free soy sauce)","qty":2,"unit":"tbsp","section":"pantry"},{"item":"lime","qty":1,"unit":"whole","section":"produce"},{"item":"scallions","qty":3,"unit":"whole","section":"produce"},{"item":"carrots","qty":2,"unit":"whole","section":"produce"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"pork-chops-apple","name":"Pork Chops with Apple Slaw","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":25,"description":"Pan-seared pork chops topped with a crunchy apple and cabbage slaw.","instructions":["Season pork chops with salt, pepper, and smoked paprika.","Sear in a hot skillet with oil, 4-5 min per side.","Thinly slice apple and cabbage. Toss with olive oil, apple cider vinegar, and a pinch of salt.","Serve pork chops topped with slaw."],"ingredients":[{"item":"bone-in pork chops","qty":2,"unit":"whole","section":"protein"},{"item":"apple","qty":1,"unit":"whole","section":"produce"},{"item":"green cabbage","qty":2,"unit":"cup","section":"produce"},{"item":"apple cider vinegar","qty":1,"unit":"tbsp","section":"pantry"},{"item":"smoked paprika","qty":1,"unit":"tsp","section":"spices"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"mediterranean-bowl","name":"Mediterranean Chicken Bowl","mealType":["lunch","dinner"],"difficulty":"easy","cookTimeMinutes":30,"description":"Grilled chicken over rice with cucumber, olives, and a bright lemon dressing.","instructions":["Season chicken breast with oregano, garlic powder, salt, and pepper.","Grill or pan-sear chicken 6-7 min per side. Let rest, then slice.","Cook rice. Assemble bowls with rice, chicken, diced cucumber, Kalamata olives, and red onion.","Drizzle with olive oil and lemon juice."],"ingredients":[{"item":"chicken breast","qty":0.75,"unit":"lb","section":"protein"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"cucumber","qty":1,"unit":"whole","section":"produce"},{"item":"Kalamata olives","qty":0.25,"unit":"cup","section":"pantry"},{"item":"red onion","qty":0.5,"unit":"whole","section":"produce"},{"item":"lemon","qty":1,"unit":"whole","section":"produce"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"},{"item":"dried oregano","qty":1,"unit":"tsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"black-bean-burrito-bowl","name":"Black Bean Burrito Bowl","mealType":["lunch","dinner"],"difficulty":"easy","cookTimeMinutes":20,"description":"Hearty bowl with seasoned black beans, rice, corn, and avocado.","instructions":["Cook rice per package directions.","Heat black beans with cumin, chili powder, and garlic powder.","Assemble bowls: rice, beans, corn, avocado, and cilantro.","Squeeze lime over top and serve."],"ingredients":[{"item":"black beans (canned)","qty":1,"unit":"can","section":"pantry"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"frozen corn","qty":1,"unit":"cup","section":"frozen"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"fresh cilantro","qty":0.25,"unit":"cup","section":"produce"},{"item":"lime","qty":1,"unit":"whole","section":"produce"},{"item":"cumin","qty":1,"unit":"tsp","section":"spices"},{"item":"chili powder","qty":0.5,"unit":"tsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"chicken-caesar-gf","name":"Chicken Caesar Salad (GF)","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"Classic Caesar with grilled chicken. Contains dairy in the Parmesan and dressing.","instructions":["Season and grill chicken breast, 6-7 min per side. Slice.","Chop romaine lettuce. Toss with Caesar dressing.","Top with chicken and shaved Parmesan.","Serve with gluten-free croutons if desired."],"ingredients":[{"item":"chicken breast","qty":0.75,"unit":"lb","section":"protein"},{"item":"romaine lettuce","qty":4,"unit":"cup","section":"produce"},{"item":"Parmesan cheese","qty":0.25,"unit":"cup","section":"dairy"},{"item":"Caesar dressing (gluten-free)","qty":3,"unit":"tbsp","section":"pantry"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":true,"tomatoes":false,"spinach":false}},
+  {"id":"thai-peanut-noodles","name":"Thai Peanut Noodle Bowl","mealType":["lunch","dinner"],"difficulty":"easy","cookTimeMinutes":20,"description":"Rice noodles in a creamy peanut-lime sauce with crunchy veggies.","instructions":["Cook rice noodles per package. Drain and rinse.","Whisk together peanut butter, tamari, lime juice, honey, and sriracha.","Toss noodles with sauce, shredded carrots, edamame, and sliced cucumber.","Top with crushed peanuts and cilantro."],"ingredients":[{"item":"rice noodles","qty":8,"unit":"oz","section":"pantry"},{"item":"peanut butter","qty":3,"unit":"tbsp","section":"pantry"},{"item":"tamari (gluten-free soy sauce)","qty":2,"unit":"tbsp","section":"pantry"},{"item":"lime","qty":1,"unit":"whole","section":"produce"},{"item":"honey","qty":1,"unit":"tbsp","section":"pantry"},{"item":"carrots","qty":2,"unit":"whole","section":"produce"},{"item":"frozen edamame","qty":1,"unit":"cup","section":"frozen"},{"item":"cucumber","qty":1,"unit":"whole","section":"produce"},{"item":"crushed peanuts","qty":2,"unit":"tbsp","section":"pantry"},{"item":"fresh cilantro","qty":0.25,"unit":"cup","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"caprese-chicken","name":"Caprese Chicken Skillet","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":25,"description":"Pan-seared chicken with fresh mozzarella, tomatoes, and basil. Contains dairy and tomatoes.","instructions":["Pound chicken breasts to even thickness. Season with salt, pepper, Italian seasoning.","Sear in a hot skillet 5-6 min per side.","Top with sliced tomatoes and fresh mozzarella. Cover to melt, 2 min.","Garnish with fresh basil and balsamic glaze. Serve with rice."],"ingredients":[{"item":"chicken breast","qty":1,"unit":"lb","section":"protein"},{"item":"fresh mozzarella","qty":4,"unit":"oz","section":"dairy"},{"item":"tomatoes","qty":2,"unit":"whole","section":"produce"},{"item":"fresh basil","qty":0.25,"unit":"cup","section":"produce"},{"item":"balsamic glaze","qty":2,"unit":"tbsp","section":"pantry"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"}],"flags":{"dairy":true,"tomatoes":true,"spinach":false}},
+  {"id":"honey-garlic-salmon","name":"Honey Garlic Glazed Salmon","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":20,"description":"Sticky-sweet salmon fillets with a garlic honey glaze and steamed broccoli.","instructions":["Whisk together honey, tamari, minced garlic, and a pinch of red pepper flakes.","Sear salmon skin-side up in an oiled skillet, 3 min.","Flip, pour glaze over salmon. Cook 4-5 min, spooning glaze over.","Serve with steamed broccoli and rice."],"ingredients":[{"item":"salmon fillets","qty":0.75,"unit":"lb","section":"protein"},{"item":"honey","qty":2,"unit":"tbsp","section":"pantry"},{"item":"tamari (gluten-free soy sauce)","qty":2,"unit":"tbsp","section":"pantry"},{"item":"garlic cloves","qty":3,"unit":"whole","section":"produce"},{"item":"broccoli florets","qty":2,"unit":"cup","section":"produce"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"stuffed-peppers","name":"Stuffed Bell Peppers","mealType":["dinner"],"difficulty":"moderate","cookTimeMinutes":50,"description":"Bell peppers stuffed with a savory ground beef and rice filling.","instructions":["Preheat oven to 375F. Cut tops off peppers and remove seeds.","Brown ground beef with diced onion. Season with cumin, garlic powder, salt, pepper.","Mix beef with cooked rice. Stuff into peppers.","Place in baking dish, cover with foil. Bake 30-35 min until peppers are tender."],"ingredients":[{"item":"bell peppers","qty":4,"unit":"whole","section":"produce"},{"item":"ground beef","qty":0.75,"unit":"lb","section":"protein"},{"item":"white rice","qty":0.75,"unit":"cup","section":"pantry"},{"item":"yellow onion","qty":0.5,"unit":"whole","section":"produce"},{"item":"cumin","qty":1,"unit":"tsp","section":"spices"},{"item":"garlic powder","qty":0.5,"unit":"tsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"lemon-butter-cod","name":"Lemon Butter Cod with Potatoes","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":25,"description":"Flaky cod in a lemon butter sauce with roasted baby potatoes. Contains dairy.","instructions":["Roast halved baby potatoes at 425F for 15 min.","Season cod with salt and pepper. Pan-sear in butter, 3-4 min per side.","Add lemon juice, capers, and a splash of white wine to the pan.","Serve cod over potatoes, spooning pan sauce over top."],"ingredients":[{"item":"cod fillets","qty":0.75,"unit":"lb","section":"protein"},{"item":"baby potatoes","qty":0.75,"unit":"lb","section":"produce"},{"item":"butter","qty":2,"unit":"tbsp","section":"dairy"},{"item":"lemon","qty":1,"unit":"whole","section":"produce"},{"item":"capers","qty":1,"unit":"tbsp","section":"pantry"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":true,"tomatoes":false,"spinach":false}},
+  {"id":"chicken-fried-rice","name":"Chicken Fried Rice","mealType":["dinner","lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"Classic fried rice with chicken, scrambled eggs, and vegetables.","instructions":["Cook rice ahead of time and refrigerate (day-old rice works best).","Scramble eggs in a hot wok, set aside.","Stir fry diced chicken until cooked. Add frozen peas, carrots, and corn.","Add cold rice, tamari, and sesame oil. Toss with eggs and scallions."],"ingredients":[{"item":"chicken breast","qty":0.75,"unit":"lb","section":"protein"},{"item":"white rice","qty":2,"unit":"cup","section":"pantry"},{"item":"eggs","qty":2,"unit":"whole","section":"dairy"},{"item":"frozen peas and carrots","qty":1,"unit":"cup","section":"frozen"},{"item":"tamari (gluten-free soy sauce)","qty":2,"unit":"tbsp","section":"pantry"},{"item":"sesame oil","qty":1,"unit":"tbsp","section":"pantry"},{"item":"scallions","qty":3,"unit":"whole","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"greek-salad-quinoa","name":"Greek Quinoa Salad","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"Protein-packed quinoa salad with cucumber, olives, and feta. Contains dairy and tomatoes.","instructions":["Cook quinoa per package directions. Let cool.","Dice cucumber, tomatoes, and red onion.","Toss quinoa with veggies, Kalamata olives, and crumbled feta.","Dress with olive oil, lemon juice, oregano, salt, and pepper."],"ingredients":[{"item":"quinoa","qty":1,"unit":"cup","section":"pantry"},{"item":"cucumber","qty":1,"unit":"whole","section":"produce"},{"item":"cherry tomatoes","qty":1,"unit":"cup","section":"produce"},{"item":"red onion","qty":0.25,"unit":"whole","section":"produce"},{"item":"Kalamata olives","qty":0.25,"unit":"cup","section":"pantry"},{"item":"feta cheese","qty":0.25,"unit":"cup","section":"dairy"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"},{"item":"lemon","qty":1,"unit":"whole","section":"produce"},{"item":"dried oregano","qty":0.5,"unit":"tsp","section":"spices"}],"flags":{"dairy":true,"tomatoes":true,"spinach":false}},
+  {"id":"teriyaki-chicken","name":"Teriyaki Chicken & Veggies","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":25,"description":"Sweet and savory teriyaki chicken with roasted vegetables over rice.","instructions":["Make teriyaki sauce: whisk tamari, honey, rice vinegar, garlic, ginger, and cornstarch.","Sear chicken thighs in oil, 5-6 min per side.","Add sauce to pan, simmer until thickened.","Serve over rice with steamed broccoli and carrots."],"ingredients":[{"item":"chicken thighs (boneless)","qty":1,"unit":"lb","section":"protein"},{"item":"tamari (gluten-free soy sauce)","qty":3,"unit":"tbsp","section":"pantry"},{"item":"honey","qty":2,"unit":"tbsp","section":"pantry"},{"item":"rice vinegar","qty":1,"unit":"tbsp","section":"pantry"},{"item":"garlic cloves","qty":2,"unit":"whole","section":"produce"},{"item":"fresh ginger","qty":1,"unit":"tsp","section":"produce"},{"item":"cornstarch","qty":1,"unit":"tsp","section":"pantry"},{"item":"broccoli florets","qty":2,"unit":"cup","section":"produce"},{"item":"carrots","qty":2,"unit":"whole","section":"produce"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"egg-roll-bowl","name":"Egg Roll in a Bowl","mealType":["dinner","lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"All the flavors of an egg roll without the wrapper.","instructions":["Brown ground pork in a large skillet.","Add shredded cabbage, grated carrots, garlic, and ginger. Cook 5 min until wilted.","Season with tamari, sesame oil, and rice vinegar.","Serve in bowls topped with sliced scallions and sesame seeds."],"ingredients":[{"item":"ground pork","qty":1,"unit":"lb","section":"protein"},{"item":"green cabbage","qty":4,"unit":"cup","section":"produce"},{"item":"carrots","qty":2,"unit":"whole","section":"produce"},{"item":"garlic cloves","qty":3,"unit":"whole","section":"produce"},{"item":"fresh ginger","qty":1,"unit":"tbsp","section":"produce"},{"item":"tamari (gluten-free soy sauce)","qty":3,"unit":"tbsp","section":"pantry"},{"item":"sesame oil","qty":1,"unit":"tbsp","section":"pantry"},{"item":"rice vinegar","qty":1,"unit":"tbsp","section":"pantry"},{"item":"scallions","qty":3,"unit":"whole","section":"produce"},{"item":"sesame seeds","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"spinach-mushroom-risotto","name":"Mushroom Risotto with Spinach","mealType":["dinner"],"difficulty":"moderate","cookTimeMinutes":40,"description":"Creamy Arborio rice with mushrooms and wilted spinach. Contains dairy and spinach.","instructions":["Heat broth in a saucepan, keep warm.","Saute diced onion in butter until soft. Add sliced mushrooms, cook 5 min.","Add Arborio rice, stir 1 min. Add white wine if using.","Ladle in broth one cup at a time, stirring, until rice is creamy. Stir in spinach and Parmesan."],"ingredients":[{"item":"Arborio rice","qty":1,"unit":"cup","section":"pantry"},{"item":"mushrooms (cremini)","qty":8,"unit":"oz","section":"produce"},{"item":"baby spinach","qty":2,"unit":"cup","section":"produce"},{"item":"chicken broth","qty":4,"unit":"cup","section":"pantry"},{"item":"yellow onion","qty":0.5,"unit":"whole","section":"produce"},{"item":"butter","qty":2,"unit":"tbsp","section":"dairy"},{"item":"Parmesan cheese","qty":0.25,"unit":"cup","section":"dairy"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":true,"tomatoes":false,"spinach":true}},
+  {"id":"tuna-avocado-wrap","name":"Tuna Avocado Lettuce Wraps","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":10,"description":"Light and fresh tuna salad scooped into crispy lettuce cups.","instructions":["Drain tuna and mix with mashed avocado, diced celery, and lemon juice.","Season with salt, pepper, and a pinch of garlic powder.","Scoop into butter lettuce leaves.","Serve with carrot sticks on the side."],"ingredients":[{"item":"canned tuna","qty":2,"unit":"can","section":"pantry"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"celery stalks","qty":2,"unit":"whole","section":"produce"},{"item":"butter lettuce","qty":1,"unit":"whole","section":"produce"},{"item":"lemon","qty":0.5,"unit":"whole","section":"produce"},{"item":"carrots","qty":2,"unit":"whole","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"baked-chicken-thighs","name":"Crispy Baked Chicken Thighs","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":40,"description":"Juicy, crispy-skinned chicken thighs with roasted vegetables.","instructions":["Preheat oven to 425F. Pat chicken thighs dry, season with salt, pepper, garlic powder, and paprika.","Place skin-side up on a sheet pan with cubed potatoes and green beans.","Drizzle everything with olive oil.","Roast 35-40 min until skin is crispy and chicken reaches 165F."],"ingredients":[{"item":"chicken thighs (bone-in, skin-on)","qty":4,"unit":"whole","section":"protein"},{"item":"potatoes","qty":3,"unit":"whole","section":"produce"},{"item":"green beans","qty":0.5,"unit":"lb","section":"produce"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"},{"item":"garlic powder","qty":1,"unit":"tsp","section":"spices"},{"item":"paprika","qty":1,"unit":"tsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"southwest-chicken-salad","name":"Southwest Chicken Salad","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"A hearty salad with grilled chicken, black beans, corn, and avocado.","instructions":["Grill or pan-sear seasoned chicken breast. Slice.","Toss romaine with black beans, corn, diced avocado, and red onion.","Drizzle with olive oil, lime juice, cumin, and salt.","Top with chicken and fresh cilantro."],"ingredients":[{"item":"chicken breast","qty":0.75,"unit":"lb","section":"protein"},{"item":"romaine lettuce","qty":4,"unit":"cup","section":"produce"},{"item":"black beans (canned)","qty":0.5,"unit":"can","section":"pantry"},{"item":"frozen corn","qty":0.5,"unit":"cup","section":"frozen"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"red onion","qty":0.25,"unit":"whole","section":"produce"},{"item":"lime","qty":1,"unit":"whole","section":"produce"},{"item":"fresh cilantro","qty":0.25,"unit":"cup","section":"produce"},{"item":"cumin","qty":0.5,"unit":"tsp","section":"spices"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"miso-ginger-soup","name":"Miso Ginger Soup with Rice","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":15,"description":"Warming miso soup with tofu, vegetables, and a side of rice.","instructions":["Bring water to a simmer with sliced ginger.","Add cubed tofu, sliced mushrooms, and bok choy.","Remove from heat, stir in miso paste (don't boil after adding miso).","Serve in bowls with scallions and a side of rice."],"ingredients":[{"item":"white miso paste","qty":3,"unit":"tbsp","section":"pantry"},{"item":"firm tofu","qty":8,"unit":"oz","section":"protein"},{"item":"fresh ginger","qty":1,"unit":"tbsp","section":"produce"},{"item":"mushrooms (cremini)","qty":4,"unit":"oz","section":"produce"},{"item":"bok choy","qty":2,"unit":"whole","section":"produce"},{"item":"scallions","qty":2,"unit":"whole","section":"produce"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"herb-crusted-pork-tenderloin","name":"Herb-Crusted Pork Tenderloin","mealType":["dinner"],"difficulty":"moderate","cookTimeMinutes":40,"description":"Roasted pork tenderloin with a Dijon herb crust and roasted vegetables.","instructions":["Preheat oven to 400F. Mix Dijon mustard, minced garlic, rosemary, thyme, salt, and pepper.","Rub mixture all over pork tenderloin.","Arrange on a sheet pan with quartered potatoes and carrots.","Roast 25-30 min until pork reaches 145F. Rest 5 min before slicing."],"ingredients":[{"item":"pork tenderloin","qty":1,"unit":"lb","section":"protein"},{"item":"Dijon mustard","qty":2,"unit":"tbsp","section":"pantry"},{"item":"garlic cloves","qty":3,"unit":"whole","section":"produce"},{"item":"fresh rosemary","qty":1,"unit":"tbsp","section":"produce"},{"item":"potatoes","qty":3,"unit":"whole","section":"produce"},{"item":"carrots","qty":3,"unit":"whole","section":"produce"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"shrimp-tacos","name":"Shrimp Tacos (Corn Tortillas)","mealType":["dinner","lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"Spiced shrimp in warm corn tortillas with slaw and avocado.","instructions":["Toss shrimp with chili powder, cumin, garlic powder, and lime juice.","Sear shrimp in a hot skillet, 2 min per side.","Make slaw: toss shredded cabbage with lime juice and salt.","Serve shrimp in warm corn tortillas with slaw and sliced avocado."],"ingredients":[{"item":"shrimp (peeled, deveined)","qty":0.75,"unit":"lb","section":"protein"},{"item":"corn tortillas","qty":8,"unit":"whole","section":"pantry"},{"item":"green cabbage","qty":2,"unit":"cup","section":"produce"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"lime","qty":2,"unit":"whole","section":"produce"},{"item":"chili powder","qty":1,"unit":"tsp","section":"spices"},{"item":"cumin","qty":0.5,"unit":"tsp","section":"spices"},{"item":"garlic powder","qty":0.5,"unit":"tsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"chicken-broccoli-bowl","name":"Sesame Chicken & Broccoli Bowl","mealType":["lunch","dinner"],"difficulty":"easy","cookTimeMinutes":25,"description":"Sweet-savory sesame chicken with steamed broccoli over rice.","instructions":["Cut chicken into pieces. Sear in a hot skillet until golden.","Add tamari, honey, garlic, and sesame oil. Simmer until sauce thickens.","Steam broccoli until bright green and tender-crisp.","Serve chicken and broccoli over rice, drizzle with sauce, top with sesame seeds."],"ingredients":[{"item":"chicken breast","qty":1,"unit":"lb","section":"protein"},{"item":"broccoli florets","qty":3,"unit":"cup","section":"produce"},{"item":"tamari (gluten-free soy sauce)","qty":3,"unit":"tbsp","section":"pantry"},{"item":"honey","qty":2,"unit":"tbsp","section":"pantry"},{"item":"garlic cloves","qty":2,"unit":"whole","section":"produce"},{"item":"sesame oil","qty":1,"unit":"tbsp","section":"pantry"},{"item":"sesame seeds","qty":1,"unit":"tbsp","section":"pantry"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"loaded-sweet-potato","name":"Loaded Baked Sweet Potatoes","mealType":["lunch","dinner"],"difficulty":"easy","cookTimeMinutes":50,"description":"Baked sweet potatoes loaded with black beans, corn, and avocado.","instructions":["Bake sweet potatoes at 400F for 40-45 min until fork-tender.","Heat black beans with cumin and garlic.","Split potatoes and stuff with beans, corn, and avocado.","Top with cilantro and a squeeze of lime."],"ingredients":[{"item":"sweet potatoes","qty":2,"unit":"whole","section":"produce"},{"item":"black beans (canned)","qty":1,"unit":"can","section":"pantry"},{"item":"frozen corn","qty":0.5,"unit":"cup","section":"frozen"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"fresh cilantro","qty":0.25,"unit":"cup","section":"produce"},{"item":"lime","qty":1,"unit":"whole","section":"produce"},{"item":"cumin","qty":0.5,"unit":"tsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"asian-lettuce-wraps","name":"Asian Chicken Lettuce Wraps","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":15,"description":"Savory ground chicken with water chestnuts in crispy lettuce cups.","instructions":["Brown ground chicken in a skillet.","Add minced garlic, ginger, tamari, and hoisin-style sauce (check GF).","Stir in diced water chestnuts.","Scoop into butter lettuce leaves. Top with scallions and sesame seeds."],"ingredients":[{"item":"ground chicken","qty":1,"unit":"lb","section":"protein"},{"item":"butter lettuce","qty":1,"unit":"whole","section":"produce"},{"item":"water chestnuts (canned)","qty":1,"unit":"can","section":"pantry"},{"item":"garlic cloves","qty":2,"unit":"whole","section":"produce"},{"item":"fresh ginger","qty":1,"unit":"tsp","section":"produce"},{"item":"tamari (gluten-free soy sauce)","qty":2,"unit":"tbsp","section":"pantry"},{"item":"scallions","qty":3,"unit":"whole","section":"produce"},{"item":"sesame seeds","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"creamy-tuscan-chicken","name":"Creamy Tuscan Chicken","mealType":["dinner"],"difficulty":"moderate","cookTimeMinutes":30,"description":"Chicken in a creamy sun-dried tomato and basil sauce. Contains dairy and tomatoes.","instructions":["Season and sear chicken breasts, 5 min per side. Set aside.","In the same pan, saute garlic. Add sun-dried tomatoes.","Pour in coconut cream (or heavy cream), add dried basil and Italian seasoning.","Return chicken, simmer 10 min. Serve over rice or mashed potatoes."],"ingredients":[{"item":"chicken breast","qty":1,"unit":"lb","section":"protein"},{"item":"sun-dried tomatoes","qty":0.5,"unit":"cup","section":"pantry"},{"item":"coconut cream","qty":0.5,"unit":"cup","section":"pantry"},{"item":"garlic cloves","qty":3,"unit":"whole","section":"produce"},{"item":"Parmesan cheese","qty":0.25,"unit":"cup","section":"dairy"},{"item":"fresh basil","qty":0.25,"unit":"cup","section":"produce"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":true,"tomatoes":true,"spinach":false}},
+  {"id":"salmon-avocado-bowl","name":"Salmon & Avocado Rice Bowl","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"Seared salmon over seasoned rice with avocado and cucumber.","instructions":["Cook sushi rice per package.","Sear salmon fillet skin-side down, 4 min. Flip, cook 3 min. Flake into pieces.","Season rice with rice vinegar and a pinch of salt.","Assemble bowls: rice, salmon, sliced avocado, cucumber. Drizzle with tamari."],"ingredients":[{"item":"salmon fillets","qty":0.5,"unit":"lb","section":"protein"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"cucumber","qty":1,"unit":"whole","section":"produce"},{"item":"rice vinegar","qty":1,"unit":"tbsp","section":"pantry"},{"item":"tamari (gluten-free soy sauce)","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"italian-sausage-peppers","name":"Italian Sausage & Peppers","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":30,"description":"GF Italian sausage with sauteed peppers and onions over rice.","instructions":["Slice GF Italian sausages. Brown in a skillet.","Add sliced bell peppers and onion. Saute until softened, 8-10 min.","Season with Italian seasoning, garlic, salt, pepper.","Serve over rice or with a simple green salad."],"ingredients":[{"item":"Italian sausage (gluten-free)","qty":1,"unit":"lb","section":"protein"},{"item":"bell peppers","qty":3,"unit":"whole","section":"produce"},{"item":"yellow onion","qty":1,"unit":"whole","section":"produce"},{"item":"garlic cloves","qty":2,"unit":"whole","section":"produce"},{"item":"Italian seasoning","qty":1,"unit":"tsp","section":"spices"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"veggie-pad-thai","name":"Veggie Pad Thai","mealType":["dinner","lunch"],"difficulty":"moderate","cookTimeMinutes":30,"description":"Rice noodles stir-fried with tofu, bean sprouts, and a tangy pad Thai sauce.","instructions":["Soak rice noodles in warm water 10 min. Drain.","Make sauce: mix tamari, lime juice, fish sauce, honey, and sriracha.","Stir fry cubed tofu until crispy. Add shredded carrots and bean sprouts.","Toss in noodles and sauce. Serve with crushed peanuts and lime."],"ingredients":[{"item":"rice noodles","qty":8,"unit":"oz","section":"pantry"},{"item":"firm tofu","qty":8,"unit":"oz","section":"protein"},{"item":"tamari (gluten-free soy sauce)","qty":2,"unit":"tbsp","section":"pantry"},{"item":"lime","qty":2,"unit":"whole","section":"produce"},{"item":"fish sauce","qty":1,"unit":"tbsp","section":"pantry"},{"item":"honey","qty":1,"unit":"tbsp","section":"pantry"},{"item":"carrots","qty":2,"unit":"whole","section":"produce"},{"item":"bean sprouts","qty":1,"unit":"cup","section":"produce"},{"item":"crushed peanuts","qty":2,"unit":"tbsp","section":"pantry"},{"item":"eggs","qty":2,"unit":"whole","section":"dairy"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"ground-turkey-zucchini","name":"Turkey & Zucchini Skillet","mealType":["dinner","lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"A quick one-pan meal with ground turkey, zucchini, and herbs.","instructions":["Brown ground turkey in a skillet. Season with Italian seasoning, garlic, salt, pepper.","Add diced zucchini and cook 5 min until tender.","Stir in a squeeze of lemon and fresh herbs.","Serve over rice or on its own."],"ingredients":[{"item":"ground turkey","qty":1,"unit":"lb","section":"protein"},{"item":"zucchini","qty":2,"unit":"whole","section":"produce"},{"item":"garlic cloves","qty":2,"unit":"whole","section":"produce"},{"item":"Italian seasoning","qty":1,"unit":"tsp","section":"spices"},{"item":"lemon","qty":0.5,"unit":"whole","section":"produce"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"spinach-feta-frittata","name":"Spinach & Feta Frittata","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":25,"description":"Fluffy egg frittata with spinach and feta. Contains dairy and spinach.","instructions":["Preheat oven to 375F. Whisk eggs with salt and pepper.","Saute spinach in an oven-safe skillet until wilted.","Pour eggs over spinach, crumble feta on top.","Cook on stove 3 min, then transfer to oven for 12-15 min until set."],"ingredients":[{"item":"eggs","qty":6,"unit":"whole","section":"dairy"},{"item":"baby spinach","qty":3,"unit":"cup","section":"produce"},{"item":"feta cheese","qty":0.5,"unit":"cup","section":"dairy"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"},{"item":"red onion","qty":0.25,"unit":"whole","section":"produce"}],"flags":{"dairy":true,"tomatoes":false,"spinach":true}},
+  {"id":"bbq-chicken-bowls","name":"BBQ Chicken Rice Bowls","mealType":["dinner","lunch"],"difficulty":"easy","cookTimeMinutes":25,"description":"Tender chicken tossed in BBQ sauce over rice with corn and black bean salad.","instructions":["Cook chicken breast, dice. Toss with GF BBQ sauce.","Make corn-bean salad: mix corn, black beans, diced red onion, cilantro, lime juice.","Serve BBQ chicken over rice with corn-bean salad on the side."],"ingredients":[{"item":"chicken breast","qty":1,"unit":"lb","section":"protein"},{"item":"BBQ sauce (gluten-free)","qty":0.25,"unit":"cup","section":"pantry"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"black beans (canned)","qty":0.5,"unit":"can","section":"pantry"},{"item":"frozen corn","qty":0.5,"unit":"cup","section":"frozen"},{"item":"red onion","qty":0.25,"unit":"whole","section":"produce"},{"item":"fresh cilantro","qty":0.25,"unit":"cup","section":"produce"},{"item":"lime","qty":1,"unit":"whole","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"coconut-shrimp-curry","name":"Coconut Shrimp Curry","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":25,"description":"Quick shrimp curry simmered in coconut milk with peppers and basil.","instructions":["Saute diced onion and bell pepper in oil until soft.","Add curry paste (or curry powder + cumin), cook 1 min.","Pour in coconut milk, bring to simmer. Add shrimp, cook 5 min.","Stir in basil. Serve over rice."],"ingredients":[{"item":"shrimp (peeled, deveined)","qty":0.75,"unit":"lb","section":"protein"},{"item":"coconut milk (canned)","qty":1,"unit":"can","section":"pantry"},{"item":"bell peppers","qty":1,"unit":"whole","section":"produce"},{"item":"yellow onion","qty":1,"unit":"whole","section":"produce"},{"item":"curry powder","qty":2,"unit":"tbsp","section":"spices"},{"item":"fresh basil","qty":0.25,"unit":"cup","section":"produce"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"chicken-mango-salad","name":"Chicken & Mango Salad","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":15,"description":"A tropical salad with grilled chicken, fresh mango, and a honey-lime dressing.","instructions":["Grill or pan-sear chicken. Slice.","Toss mixed greens with diced mango, sliced avocado, and red onion.","Whisk together lime juice, honey, and olive oil for dressing.","Top salad with chicken and drizzle with dressing."],"ingredients":[{"item":"chicken breast","qty":0.75,"unit":"lb","section":"protein"},{"item":"mixed salad greens","qty":4,"unit":"cup","section":"produce"},{"item":"mango","qty":1,"unit":"whole","section":"produce"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"red onion","qty":0.25,"unit":"whole","section":"produce"},{"item":"lime","qty":1,"unit":"whole","section":"produce"},{"item":"honey","qty":1,"unit":"tbsp","section":"pantry"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"one-pot-chili","name":"One-Pot Turkey Chili","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":40,"description":"Hearty, warming chili with ground turkey and beans. Contains tomatoes.","instructions":["Brown ground turkey with diced onion.","Add garlic, chili powder, cumin, and smoked paprika.","Stir in diced tomatoes (canned), kidney beans, and chicken broth.","Simmer 25-30 min. Serve topped with avocado and cilantro."],"ingredients":[{"item":"ground turkey","qty":1,"unit":"lb","section":"protein"},{"item":"diced tomatoes (canned)","qty":1,"unit":"can","section":"pantry"},{"item":"kidney beans (canned)","qty":1,"unit":"can","section":"pantry"},{"item":"yellow onion","qty":1,"unit":"whole","section":"produce"},{"item":"garlic cloves","qty":3,"unit":"whole","section":"produce"},{"item":"chicken broth","qty":1,"unit":"cup","section":"pantry"},{"item":"chili powder","qty":2,"unit":"tbsp","section":"spices"},{"item":"cumin","qty":1,"unit":"tsp","section":"spices"},{"item":"smoked paprika","qty":1,"unit":"tsp","section":"spices"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"fresh cilantro","qty":0.25,"unit":"cup","section":"produce"}],"flags":{"dairy":false,"tomatoes":true,"spinach":false}},
+  {"id":"quinoa-stuffed-zucchini","name":"Quinoa-Stuffed Zucchini Boats","mealType":["dinner"],"difficulty":"moderate","cookTimeMinutes":45,"description":"Zucchini halves filled with herbed quinoa and vegetables.","instructions":["Preheat oven to 375F. Halve zucchini lengthwise, scoop out centers.","Cook quinoa. Mix with diced bell pepper, onion, garlic, herbs, salt, and pepper.","Stuff zucchini with quinoa mixture. Drizzle with olive oil.","Bake 25-30 min until zucchini is tender."],"ingredients":[{"item":"zucchini","qty":3,"unit":"whole","section":"produce"},{"item":"quinoa","qty":0.75,"unit":"cup","section":"pantry"},{"item":"bell peppers","qty":1,"unit":"whole","section":"produce"},{"item":"yellow onion","qty":0.5,"unit":"whole","section":"produce"},{"item":"garlic cloves","qty":2,"unit":"whole","section":"produce"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"},{"item":"Italian seasoning","qty":1,"unit":"tsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"steak-chimichurri","name":"Steak with Chimichurri","mealType":["dinner"],"difficulty":"moderate","cookTimeMinutes":25,"description":"Pan-seared steak topped with a bright, herby chimichurri sauce.","instructions":["Make chimichurri: blend parsley, cilantro, garlic, red wine vinegar, olive oil, red pepper flakes.","Season steak with salt and pepper. Sear in a very hot skillet, 4 min per side for medium.","Let rest 5 min, then slice against the grain.","Serve with chimichurri and roasted potatoes."],"ingredients":[{"item":"flank steak","qty":1,"unit":"lb","section":"protein"},{"item":"fresh parsley","qty":0.5,"unit":"cup","section":"produce"},{"item":"fresh cilantro","qty":0.25,"unit":"cup","section":"produce"},{"item":"garlic cloves","qty":3,"unit":"whole","section":"produce"},{"item":"red wine vinegar","qty":2,"unit":"tbsp","section":"pantry"},{"item":"olive oil","qty":3,"unit":"tbsp","section":"pantry"},{"item":"potatoes","qty":3,"unit":"whole","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"chicken-tortilla-soup","name":"Chicken Tortilla Soup","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":35,"description":"Smoky, comforting soup with shredded chicken and crispy tortilla strips. Contains tomatoes.","instructions":["Saute onion, garlic, and jalapeno in oil.","Add chicken broth, diced tomatoes, cumin, and chili powder.","Add chicken breast, simmer 20 min. Remove and shred chicken, return to pot.","Serve with corn tortilla strips, avocado, and lime."],"ingredients":[{"item":"chicken breast","qty":1,"unit":"lb","section":"protein"},{"item":"chicken broth","qty":4,"unit":"cup","section":"pantry"},{"item":"diced tomatoes (canned)","qty":1,"unit":"can","section":"pantry"},{"item":"yellow onion","qty":1,"unit":"whole","section":"produce"},{"item":"garlic cloves","qty":3,"unit":"whole","section":"produce"},{"item":"corn tortillas","qty":4,"unit":"whole","section":"pantry"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"lime","qty":1,"unit":"whole","section":"produce"},{"item":"cumin","qty":1,"unit":"tsp","section":"spices"},{"item":"chili powder","qty":1,"unit":"tsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":true,"spinach":false}},
+  {"id":"cucumber-hummus-plate","name":"Hummus & Veggie Plate","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":10,"description":"A no-cook lunch with hummus, fresh veggies, olives, and rice crackers.","instructions":["Scoop hummus into a bowl, drizzle with olive oil and paprika.","Slice cucumber, bell pepper, and carrots.","Arrange veggies, olives, and GF crackers around the hummus.","Serve immediately."],"ingredients":[{"item":"hummus","qty":0.5,"unit":"cup","section":"pantry"},{"item":"cucumber","qty":1,"unit":"whole","section":"produce"},{"item":"bell peppers","qty":1,"unit":"whole","section":"produce"},{"item":"carrots","qty":2,"unit":"whole","section":"produce"},{"item":"Kalamata olives","qty":0.25,"unit":"cup","section":"pantry"},{"item":"rice crackers","qty":1,"unit":"bag","section":"pantry"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"maple-dijon-chicken","name":"Maple Dijon Chicken","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":30,"description":"Chicken thighs glazed with a sweet and tangy maple-Dijon sauce.","instructions":["Whisk together maple syrup, Dijon mustard, garlic, tamari, and apple cider vinegar.","Season chicken thighs and sear skin-side down, 5 min.","Flip, pour glaze over. Transfer to 400F oven for 15 min.","Serve with roasted Brussels sprouts and rice."],"ingredients":[{"item":"chicken thighs (bone-in, skin-on)","qty":4,"unit":"whole","section":"protein"},{"item":"maple syrup","qty":2,"unit":"tbsp","section":"pantry"},{"item":"Dijon mustard","qty":2,"unit":"tbsp","section":"pantry"},{"item":"garlic cloves","qty":2,"unit":"whole","section":"produce"},{"item":"tamari (gluten-free soy sauce)","qty":1,"unit":"tbsp","section":"pantry"},{"item":"Brussels sprouts","qty":0.75,"unit":"lb","section":"produce"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"chicken-avocado-salad","name":"Chicken Avocado Power Salad","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":15,"description":"A filling salad with grilled chicken, avocado, hard-boiled egg, and a lemon vinaigrette.","instructions":["Grill or pan-sear chicken breast. Slice.","Arrange mixed greens with sliced avocado, hard-boiled eggs, cucumber, and red onion.","Whisk lemon juice, olive oil, salt, and pepper for vinaigrette.","Top with chicken and drizzle with dressing."],"ingredients":[{"item":"chicken breast","qty":0.75,"unit":"lb","section":"protein"},{"item":"mixed salad greens","qty":4,"unit":"cup","section":"produce"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"eggs","qty":2,"unit":"whole","section":"dairy"},{"item":"cucumber","qty":0.5,"unit":"whole","section":"produce"},{"item":"red onion","qty":0.25,"unit":"whole","section":"produce"},{"item":"lemon","qty":1,"unit":"whole","section":"produce"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}}
+]
+</script>
+
+<!-- APPLICATION JAVASCRIPT -->
+<script>
+const App = {
+  recipes: [],
+  db: null,
+  dbRef: null,
+  state: {
+    mealPlan: Array.from({ length: 7 }, () => ({ lunch: null, dinner: null })),
+    groceryList: [],
+    groceryOverrides: { removed: [], added: [], checked: [] },
+    filters: { mealType: 'all', difficulty: 'all', time: 'all', search: '' }
+  },
+  days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+  syncing: false,
+
+  init() {
+    this.recipes = JSON.parse(document.getElementById('recipe-data').textContent);
+    this.Setup.checkExisting();
+  },
+
+  startApp() {
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('app-container').classList.add('active');
+    document.getElementById('sync-status').style.display = 'flex';
+
+    this.bindNav();
+    this.bindFilters();
+    this.RecipeBrowser.render();
+    this.Planner.render();
+    this.DragDrop.init();
+  },
+
+  // ===== SETUP =====
+  Setup: {
+    checkExisting() {
+      const saved = localStorage.getItem('mealPlannerFirebaseConfig');
+      if (saved) {
+        try {
+          const config = JSON.parse(saved);
+          App.Firebase.connect(config);
+        } catch(e) {
+          document.getElementById('setup-screen').style.display = 'block';
+        }
+      } else {
+        document.getElementById('setup-screen').style.display = 'block';
+      }
+    },
+
+    connect() {
+      const raw = document.getElementById('firebase-config-input').value.trim();
+      const errorEl = document.getElementById('setup-error');
+      errorEl.style.display = 'none';
+
+      try {
+        // Parse the config - handle both JSON and JS object literal formats
+        let configStr = raw;
+        // Add quotes around unquoted keys
+        configStr = configStr.replace(/(\w+)\s*:/g, '"$1":');
+        // Remove trailing commas
+        configStr = configStr.replace(/,\s*}/g, '}');
+        const config = JSON.parse(configStr);
+
+        if (!config.apiKey || !config.databaseURL || !config.projectId) {
+          throw new Error('Missing required fields (apiKey, databaseURL, projectId). Make sure you copied the full config.');
+        }
+
+        localStorage.setItem('mealPlannerFirebaseConfig', JSON.stringify(config));
+        App.Firebase.connect(config);
+      } catch(e) {
+        errorEl.textContent = e.message || 'Could not parse config. Make sure you copied everything between the curly braces { ... }';
+        errorEl.style.display = 'block';
+      }
+    }
+  },
+
+  // ===== FIREBASE =====
+  Firebase: {
+    connect(config) {
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(config);
+        }
+        App.db = firebase.database();
+        App.dbRef = App.db.ref('mealPlanner');
+
+        // Listen for real-time changes
+        App.dbRef.on('value', (snapshot) => {
+          const data = snapshot.val();
+          if (data && !App.syncing) {
+            if (data.mealPlan) App.state.mealPlan = data.mealPlan;
+            if (data.groceryOverrides) App.state.groceryOverrides = data.groceryOverrides;
+            App.Planner.render();
+            if (document.querySelector('#view-grocery.active')) {
+              App.GroceryList.generate();
+            }
+          }
+          App.Firebase.setStatus('connected');
+        });
+
+        App.dbRef.child('.info/connected').on('value', () => {});
+        App.Firebase.setStatus('connected');
+        App.startApp();
+      } catch(e) {
+        console.error('Firebase error:', e);
+        localStorage.removeItem('mealPlannerFirebaseConfig');
+        document.getElementById('setup-screen').style.display = 'block';
+        const errorEl = document.getElementById('setup-error');
+        errorEl.textContent = 'Connection failed: ' + e.message;
+        errorEl.style.display = 'block';
+      }
+    },
+
+    save() {
+      if (!App.dbRef) return;
+      App.syncing = true;
+      App.Firebase.setStatus('syncing');
+      App.dbRef.set({
+        mealPlan: App.state.mealPlan,
+        groceryOverrides: App.state.groceryOverrides,
+        lastUpdated: Date.now()
+      }).then(() => {
+        App.syncing = false;
+        App.Firebase.setStatus('connected');
+      }).catch((e) => {
+        App.syncing = false;
+        App.Firebase.setStatus('error');
+        console.error('Save error:', e);
+      });
+    },
+
+    setStatus(status) {
+      const dot = document.getElementById('sync-dot');
+      const text = document.getElementById('sync-text');
+      dot.className = 'sync-dot';
+      if (status === 'connected') {
+        dot.classList.add('connected');
+        text.textContent = 'Synced';
+      } else if (status === 'syncing') {
+        dot.classList.add('syncing');
+        text.textContent = 'Syncing...';
+      } else {
+        text.textContent = 'Offline';
+      }
+    }
+  },
+
+  // ===== NAVIGATION =====
+  bindNav() {
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => this.switchTab(tab.dataset.view));
+    });
+  },
+
+  switchTab(view) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
+    if (view === 'grocery') this.GroceryList.generate();
+  },
+
+  // ===== FILTERS =====
+  bindFilters() {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const group = btn.dataset.filter;
+        document.querySelectorAll(`.filter-btn[data-filter="${group}"]`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.state.filters[group === 'time' ? 'time' : group] = btn.dataset.value;
+        this.RecipeBrowser.render();
+      });
+    });
+    document.getElementById('recipe-search').addEventListener('input', (e) => {
+      this.state.filters.search = e.target.value.toLowerCase();
+      this.RecipeBrowser.render();
+    });
+  },
+
+  // ===== RECIPE BROWSER =====
+  RecipeBrowser: {
+    render() {
+      const f = App.state.filters;
+      const filtered = App.recipes.filter(r => {
+        if (f.mealType !== 'all' && !r.mealType.includes(f.mealType)) return false;
+        if (f.difficulty !== 'all' && r.difficulty !== f.difficulty) return false;
+        if (f.time !== 'all' && r.cookTimeMinutes > parseInt(f.time)) return false;
+        if (f.search && !r.name.toLowerCase().includes(f.search) && !r.description.toLowerCase().includes(f.search)) return false;
+        return true;
+      });
+
+      const grid = document.getElementById('recipe-grid');
+      grid.innerHTML = filtered.map(r => {
+        const flags = [];
+        if (r.flags.dairy) flags.push('Dairy');
+        if (r.flags.tomatoes) flags.push('Tomatoes');
+        if (r.flags.spinach) flags.push('Spinach');
+
+        return `
+          <div class="recipe-card" draggable="true" data-recipe-id="${r.id}">
+            <div class="recipe-card-header">
+              <div class="recipe-name">${r.name}</div>
+              <div class="recipe-badges">
+                <span class="badge badge-${r.difficulty}">${r.difficulty}</span>
+              </div>
+            </div>
+            <div class="recipe-meta">
+              <span>${r.cookTimeMinutes} min</span>
+              <span>${r.mealType.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' / ')}</span>
+            </div>
+            <div class="recipe-description">${r.description}</div>
+            ${flags.length ? `<div class="recipe-flags">${flags.map(f => `<span class="flag">Contains ${f}</span>`).join('')}</div>` : ''}
+            <div class="recipe-card-actions">
+              <button class="btn-add-to-plan" onclick="App.showSlotPicker('${r.id}')">+ Add to Plan</button>
+              <button class="btn-view-recipe" onclick="App.showRecipeModal('${r.id}')">View Recipe</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      App.DragDrop.bindCards();
+    }
+  },
+
+  // ===== PLANNER =====
+  Planner: {
+    render() {
+      const grid = document.getElementById('week-grid');
+      grid.innerHTML = App.days.map((day, i) => {
+        const lunch = App.state.mealPlan[i]?.lunch;
+        const dinner = App.state.mealPlan[i]?.dinner;
+        const lunchRecipe = lunch ? App.recipes.find(r => r.id === lunch) : null;
+        const dinnerRecipe = dinner ? App.recipes.find(r => r.id === dinner) : null;
+
+        return `
+          <div class="day-column">
+            <div class="day-header">${day}</div>
+            <div class="meal-slot" data-day="${i}" data-slot="lunch">
+              <div class="slot-label">Lunch</div>
+              ${lunchRecipe ? `
+                <div class="slot-filled" onclick="App.showRecipeModal('${lunchRecipe.id}')">
+                  <button class="slot-remove" onclick="event.stopPropagation(); App.Planner.removeMeal(${i}, 'lunch')">&times;</button>
+                  <div class="recipe-name">${lunchRecipe.name}</div>
+                  <div class="recipe-time">${lunchRecipe.cookTimeMinutes} min</div>
+                </div>` : `
+                <div class="slot-empty">Drop a recipe here</div>`}
+            </div>
+            <div class="meal-slot" data-day="${i}" data-slot="dinner">
+              <div class="slot-label">Dinner</div>
+              ${dinnerRecipe ? `
+                <div class="slot-filled" onclick="App.showRecipeModal('${dinnerRecipe.id}')">
+                  <button class="slot-remove" onclick="event.stopPropagation(); App.Planner.removeMeal(${i}, 'dinner')">&times;</button>
+                  <div class="recipe-name">${dinnerRecipe.name}</div>
+                  <div class="recipe-time">${dinnerRecipe.cookTimeMinutes} min</div>
+                </div>` : `
+                <div class="slot-empty">Drop a recipe here</div>`}
+            </div>
+          </div>`;
+      }).join('');
+
+      App.DragDrop.bindSlots();
+      this.checkReduceWarnings();
+    },
+
+    addMeal(day, slot, recipeId) {
+      App.state.mealPlan[day][slot] = recipeId;
+      App.Firebase.save();
+      this.render();
+      const recipe = App.recipes.find(r => r.id === recipeId);
+      App.toast(`Added "${recipe.name}" to ${App.days[day]} ${slot}`);
+    },
+
+    removeMeal(day, slot) {
+      App.state.mealPlan[day][slot] = null;
+      App.Firebase.save();
+      this.render();
+    },
+
+    clearAll() {
+      if (!confirm('Clear all meals from the week?')) return;
+      App.state.mealPlan = Array.from({ length: 7 }, () => ({ lunch: null, dinner: null }));
+      App.state.groceryOverrides = { removed: [], added: [], checked: [] };
+      App.Firebase.save();
+      this.render();
+      App.toast('Week cleared');
+    },
+
+    checkReduceWarnings() {
+      let dairyCount = 0, tomatoCount = 0, spinachCount = 0;
+      App.state.mealPlan.forEach(day => {
+        if (!day) return;
+        ['lunch', 'dinner'].forEach(slot => {
+          if (day[slot]) {
+            const r = App.recipes.find(rec => rec.id === day[slot]);
+            if (r) {
+              if (r.flags.dairy) dairyCount++;
+              if (r.flags.tomatoes) tomatoCount++;
+              if (r.flags.spinach) spinachCount++;
+            }
+          }
+        });
+      });
+
+      const warnings = [];
+      if (dairyCount >= 3) warnings.push(`${dairyCount} meals contain dairy`);
+      if (tomatoCount >= 3) warnings.push(`${tomatoCount} meals contain tomatoes`);
+      if (spinachCount >= 3) warnings.push(`${spinachCount} meals contain spinach`);
+
+      const el = document.getElementById('reduce-warning');
+      if (warnings.length) {
+        el.style.display = 'block';
+        el.textContent = 'Heads up: ' + warnings.join(', ') + ". You're trying to reduce these — consider swapping some out.";
+      } else {
+        el.style.display = 'none';
+      }
+    }
+  },
+
+  // ===== DRAG AND DROP =====
+  DragDrop: {
+    draggedId: null,
+
+    init() { this.initTouch(); },
+
+    bindCards() {
+      document.querySelectorAll('.recipe-card[draggable]').forEach(card => {
+        card.addEventListener('dragstart', (e) => {
+          this.draggedId = card.dataset.recipeId;
+          card.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', card.dataset.recipeId);
+          e.dataTransfer.effectAllowed = 'copy';
+        });
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          this.draggedId = null;
+        });
+      });
+    },
+
+    bindSlots() {
+      document.querySelectorAll('.meal-slot').forEach(slot => {
+        slot.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'copy';
+          slot.classList.add('drag-over');
+        });
+        slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+        slot.addEventListener('drop', (e) => {
+          e.preventDefault();
+          slot.classList.remove('drag-over');
+          const recipeId = e.dataTransfer.getData('text/plain');
+          if (recipeId) {
+            App.Planner.addMeal(parseInt(slot.dataset.day), slot.dataset.slot, recipeId);
+          }
+        });
+      });
+    },
+
+    initTouch() {
+      let touchClone = null;
+      let touchRecipeId = null;
+
+      document.addEventListener('touchstart', (e) => {
+        const card = e.target.closest('.recipe-card[draggable]');
+        if (!card) return;
+        touchRecipeId = card.dataset.recipeId;
+      }, { passive: true });
+
+      document.addEventListener('touchmove', (e) => {
+        if (!touchRecipeId) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        if (!touchClone) {
+          const card = document.querySelector(`[data-recipe-id="${touchRecipeId}"]`);
+          touchClone = card.cloneNode(true);
+          touchClone.style.cssText = 'position:fixed;z-index:999;pointer-events:none;opacity:0.8;width:200px;transform:rotate(3deg);';
+          document.body.appendChild(touchClone);
+        }
+        touchClone.style.left = (touch.clientX - 100) + 'px';
+        touchClone.style.top = (touch.clientY - 30) + 'px';
+
+        document.querySelectorAll('.meal-slot').forEach(s => s.classList.remove('drag-over'));
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        const slot = el?.closest('.meal-slot');
+        if (slot) slot.classList.add('drag-over');
+      }, { passive: false });
+
+      document.addEventListener('touchend', (e) => {
+        if (!touchRecipeId) return;
+        if (touchClone) { document.body.removeChild(touchClone); touchClone = null; }
+        const touch = e.changedTouches[0];
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        const slot = el?.closest('.meal-slot');
+        if (slot) {
+          slot.classList.remove('drag-over');
+          App.Planner.addMeal(parseInt(slot.dataset.day), slot.dataset.slot, touchRecipeId);
+        }
+        touchRecipeId = null;
+      });
+    }
+  },
+
+  // ===== GROCERY LIST =====
+  GroceryList: {
+    generate() {
+      const items = [];
+      App.state.mealPlan.forEach(day => {
+        if (!day) return;
+        ['lunch', 'dinner'].forEach(slot => {
+          if (day[slot]) {
+            const recipe = App.recipes.find(r => r.id === day[slot]);
+            if (recipe) {
+              recipe.ingredients.forEach(ing => items.push({ ...ing }));
+            }
+          }
+        });
+      });
+
+      const combined = {};
+      items.forEach(item => {
+        const key = item.item.toLowerCase();
+        if (combined[key]) {
+          const existing = combined[key];
+          if (existing.unit === item.unit) {
+            existing.qty += item.qty;
+          } else {
+            const converted = App.Utils.convertUnit(item.qty, item.unit, existing.unit);
+            if (converted !== null) {
+              existing.qty += converted;
+            } else {
+              combined[key + '_' + item.unit] = { ...item };
+            }
+          }
+        } else {
+          combined[key] = { ...item };
+        }
+      });
+
+      const removed = App.state.groceryOverrides?.removed || [];
+      App.state.groceryList = Object.values(combined).filter(item =>
+        !removed.includes(item.item.toLowerCase())
+      );
+
+      (App.state.groceryOverrides?.added || []).forEach(item => {
+        App.state.groceryList.push(item);
+      });
+
+      this.render();
+    },
+
+    render() {
+      const container = document.getElementById('grocery-list');
+
+      if (App.state.groceryList.length === 0) {
+        container.innerHTML = `
+          <div class="grocery-empty">
+            <p>No items yet.</p>
+            <p>Add meals to your weekly plan, then come back here to build your grocery list.</p>
+          </div>`;
+        return;
+      }
+
+      const sections = {};
+      const sectionOrder = ['produce', 'protein', 'dairy', 'pantry', 'frozen', 'spices', 'other'];
+      const sectionNames = { produce: 'Produce', protein: 'Meat & Seafood', dairy: 'Dairy & Eggs', pantry: 'Pantry', frozen: 'Frozen', spices: 'Spices & Seasonings', other: 'Other' };
+
+      App.state.groceryList.forEach(item => {
+        const sec = item.section || 'other';
+        if (!sections[sec]) sections[sec] = [];
+        sections[sec].push(item);
+      });
+
+      const checked = App.state.groceryOverrides?.checked || [];
+
+      container.innerHTML = sectionOrder
+        .filter(sec => sections[sec]?.length)
+        .map(sec => `
+          <div class="grocery-section">
+            <div class="grocery-section-header" onclick="this.classList.toggle('collapsed'); this.nextElementSibling.style.display = this.classList.contains('collapsed') ? 'none' : 'block';">
+              ${sectionNames[sec] || sec} (${sections[sec].length})
+              <span class="toggle">&#9660;</span>
+            </div>
+            <div class="grocery-items">
+              ${sections[sec].map(item => {
+                const isChecked = checked.includes(item.item.toLowerCase());
+                return `
+                  <div class="grocery-item ${isChecked ? 'checked' : ''}">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="App.GroceryList.toggleCheck('${item.item.replace(/'/g, "\\'")}')">
+                    <span class="item-name">${item.item}</span>
+                    <span class="item-qty">${App.Utils.formatQty(item.qty)} ${item.unit}</span>
+                    <button class="item-remove" onclick="App.GroceryList.removeItem('${item.item.replace(/'/g, "\\'")}')">&times;</button>
+                  </div>`;
+              }).join('')}
+              <div class="add-item-row">
+                <input type="text" placeholder="Add item..." onkeydown="if(event.key==='Enter') App.GroceryList.addItem('${sec}', this)">
+                <button onclick="App.GroceryList.addItem('${sec}', this.previousElementSibling)">Add</button>
+              </div>
+            </div>
+          </div>`).join('');
+    },
+
+    removeItem(name) {
+      if (!App.state.groceryOverrides.removed) App.state.groceryOverrides.removed = [];
+      App.state.groceryOverrides.removed.push(name.toLowerCase());
+      App.state.groceryOverrides.added = (App.state.groceryOverrides.added || []).filter(
+        i => i.item.toLowerCase() !== name.toLowerCase()
+      );
+      App.Firebase.save();
+      this.generate();
+    },
+
+    addItem(section, input) {
+      const val = input.value.trim();
+      if (!val) return;
+      if (!App.state.groceryOverrides.added) App.state.groceryOverrides.added = [];
+      App.state.groceryOverrides.added.push({ item: val, qty: 1, unit: '', section });
+      input.value = '';
+      App.Firebase.save();
+      this.generate();
+    },
+
+    toggleCheck(name) {
+      if (!App.state.groceryOverrides.checked) App.state.groceryOverrides.checked = [];
+      const idx = App.state.groceryOverrides.checked.indexOf(name.toLowerCase());
+      if (idx > -1) {
+        App.state.groceryOverrides.checked.splice(idx, 1);
+      } else {
+        App.state.groceryOverrides.checked.push(name.toLowerCase());
+      }
+      App.Firebase.save();
+      this.render();
+    }
+  },
+
+  // ===== EXPORT =====
+  Export: {
+    toClipboard() {
+      const sections = {};
+      const sectionNames = { produce: 'PRODUCE', protein: 'MEAT & SEAFOOD', dairy: 'DAIRY & EGGS', pantry: 'PANTRY', frozen: 'FROZEN', spices: 'SPICES', other: 'OTHER' };
+
+      App.state.groceryList.forEach(item => {
+        const sec = item.section || 'other';
+        if (!sections[sec]) sections[sec] = [];
+        sections[sec].push(item);
+      });
+
+      let text = 'GROCERY LIST\n\n';
+      Object.keys(sections).forEach(sec => {
+        text += `${sectionNames[sec] || sec.toUpperCase()}\n`;
+        sections[sec].forEach(item => {
+          const checked = (App.state.groceryOverrides?.checked || []).includes(item.item.toLowerCase());
+          text += `${checked ? '[x]' : '[ ]'} ${item.item} — ${App.Utils.formatQty(item.qty)} ${item.unit}\n`;
+        });
+        text += '\n';
+      });
+
+      navigator.clipboard.writeText(text).then(() => App.toast('Grocery list copied!'));
+    },
+
+    fullPlanToClipboard() {
+      let text = 'WEEKLY MEAL PLAN\n\n';
+      App.days.forEach((day, i) => {
+        text += `${day.toUpperCase()}\n`;
+        ['lunch', 'dinner'].forEach(slot => {
+          const recipeId = App.state.mealPlan[i]?.[slot];
+          if (recipeId) {
+            const r = App.recipes.find(rec => rec.id === recipeId);
+            text += `  ${slot.charAt(0).toUpperCase() + slot.slice(1)}: ${r.name} (${r.cookTimeMinutes} min)\n`;
+            text += `    Ingredients:\n`;
+            r.ingredients.forEach(ing => {
+              text += `      - ${App.Utils.formatQty(ing.qty)} ${ing.unit} ${ing.item}\n`;
+            });
+            text += `    Steps:\n`;
+            r.instructions.forEach((step, j) => {
+              text += `      ${j + 1}. ${step}\n`;
+            });
+          } else {
+            text += `  ${slot.charAt(0).toUpperCase() + slot.slice(1)}: (empty)\n`;
+          }
+        });
+        text += '\n';
+      });
+
+      navigator.clipboard.writeText(text).then(() => App.toast('Full plan copied!'));
+    }
+  },
+
+  // ===== MODALS =====
+  showRecipeModal(recipeId) {
+    const r = App.recipes.find(rec => rec.id === recipeId);
+    if (!r) return;
+
+    const flags = [];
+    if (r.flags.dairy) flags.push('Dairy');
+    if (r.flags.tomatoes) flags.push('Tomatoes');
+    if (r.flags.spinach) flags.push('Spinach');
+
+    document.getElementById('modal-content').innerHTML = `
+      <button class="modal-close" onclick="App.closeModal()">&times;</button>
+      <h3>${r.name}</h3>
+      <div class="modal-meta">
+        <span>${r.cookTimeMinutes} min</span>
+        <span class="badge badge-${r.difficulty}">${r.difficulty}</span>
+        <span>${r.mealType.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' / ')}</span>
+      </div>
+      ${flags.length ? `<div class="recipe-flags" style="margin-bottom:16px">${flags.map(f => `<span class="flag">Contains ${f}</span>`).join('')}</div>` : ''}
+      <p style="margin-bottom:16px;color:var(--text-light)">${r.description}</p>
+      <div class="modal-section">
+        <h4>Ingredients (serves 2)</h4>
+        <ul>${r.ingredients.map(i => `<li>${App.Utils.formatQty(i.qty)} ${i.unit} ${i.item}</li>`).join('')}</ul>
+      </div>
+      <div class="modal-section">
+        <h4>Instructions</h4>
+        <ol>${r.instructions.map(s => `<li>${s}</li>`).join('')}</ol>
+      </div>
+      <button class="btn btn-primary" style="margin-top:10px" onclick="App.closeModal(); App.showSlotPicker('${r.id}')">+ Add to Plan</button>`;
+
+    document.getElementById('modal-overlay').classList.add('active');
+  },
+
+  showSlotPicker(recipeId) {
+    const r = App.recipes.find(rec => rec.id === recipeId);
+    if (!r) return;
+
+    let html = `
+      <button class="modal-close" onclick="App.closeModal()">&times;</button>
+      <h3>Add "${r.name}" to...</h3>
+      <div class="slot-picker">`;
+
+    App.days.forEach((day, i) => {
+      ['lunch', 'dinner'].forEach(slot => {
+        const existing = App.state.mealPlan[i]?.[slot];
+        const existingRecipe = existing ? App.recipes.find(rec => rec.id === existing) : null;
+        const label = `${day} ${slot.charAt(0).toUpperCase() + slot.slice(1)}`;
+
+        if (existingRecipe) {
+          html += `<button class="slot-pick-btn occupied" onclick="App.Planner.addMeal(${i}, '${slot}', '${recipeId}'); App.closeModal();" title="Replace: ${existingRecipe.name}">${label}<br><small style="color:#999">${existingRecipe.name}</small></button>`;
+        } else {
+          html += `<button class="slot-pick-btn" onclick="App.Planner.addMeal(${i}, '${slot}', '${recipeId}'); App.closeModal();">${label}</button>`;
+        }
+      });
+    });
+
+    html += '</div>';
+    document.getElementById('modal-content').innerHTML = html;
+    document.getElementById('modal-overlay').classList.add('active');
+  },
+
+  closeModal() {
+    document.getElementById('modal-overlay').classList.remove('active');
+  },
+
+  toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  },
+
+  // ===== UTILITIES =====
+  Utils: {
+    CONVERSIONS: {
+      tsp: { tsp: 1, tbsp: 1/3, cup: 1/48 },
+      tbsp: { tsp: 3, tbsp: 1, cup: 1/16 },
+      cup: { tsp: 48, tbsp: 16, cup: 1 },
+      oz: { oz: 1, lb: 1/16 },
+      lb: { oz: 16, lb: 1 }
+    },
+
+    convertUnit(qty, from, to) {
+      if (from === to) return qty;
+      const group = this.CONVERSIONS[from];
+      if (group && group[to] !== undefined) return qty * group[to];
+      return null;
+    },
+
+    formatQty(n) {
+      if (n === 0) return '0';
+      const whole = Math.floor(n);
+      const frac = n - whole;
+      const fractions = [
+        [1/8, '1/8'], [1/4, '1/4'], [1/3, '1/3'], [3/8, '3/8'],
+        [1/2, '1/2'], [5/8, '5/8'], [2/3, '2/3'], [3/4, '3/4'], [7/8, '7/8']
+      ];
+      if (frac < 0.05) return whole.toString();
+      let closest = '';
+      let minDiff = 1;
+      fractions.forEach(([val, str]) => {
+        const diff = Math.abs(frac - val);
+        if (diff < minDiff) { minDiff = diff; closest = str; }
+      });
+      if (minDiff > 0.05) return n.toFixed(1);
+      return whole > 0 ? `${whole} ${closest}` : closest;
+    }
+  }
+};
+
+document.getElementById('modal-overlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modal-overlay')) App.closeModal();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') App.closeModal(); });
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+
+</body>
+</html>
