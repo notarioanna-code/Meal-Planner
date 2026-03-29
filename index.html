@@ -953,6 +953,10 @@ body {
         <button class="filter-btn active" data-filter="mealType" data-value="all">All</button>
         <button class="filter-btn" data-filter="mealType" data-value="lunch">Lunch</button>
         <button class="filter-btn" data-filter="mealType" data-value="dinner">Dinner</button>
+        <button class="filter-btn" data-filter="mealType" data-value="breakfast">Breakfast</button>
+        <button class="filter-btn" data-filter="mealType" data-value="snack">Snack</button>
+        <button class="filter-btn" data-filter="mealType" data-value="dessert">Dessert</button>
+        <button class="filter-btn" data-filter="mealType" data-value="side">Side</button>
       </div>
       <div class="filter-group">
         <label>Difficulty:</label>
@@ -994,6 +998,10 @@ body {
                 <option value="dinner">Dinner</option>
                 <option value="lunch">Lunch</option>
                 <option value="both">Both Lunch & Dinner</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="snack">Snack</option>
+                <option value="dessert">Dessert</option>
+                <option value="side">Side Dish</option>
               </select>
             </div>
             <div class="form-group">
@@ -1137,7 +1145,26 @@ body {
   {"id":"slow-cooker-carnitas","name":"Slow Cooker Carnitas","mealType":["dinner"],"difficulty":"easy","cookTimeMinutes":480,"description":"Fall-apart tender pork shoulder cooked low and slow, served in corn tortillas.","instructions":["Rub pork shoulder with cumin, chili powder, garlic powder, oregano, salt, and pepper.","Place in slow cooker with diced onion, garlic, orange juice, and lime juice.","Cook on low 8 hours (or high 4 hours) until fork-tender.","Shred pork, crisp under broiler 3 min. Serve in corn tortillas with avocado and cilantro."],"ingredients":[{"item":"pork shoulder","qty":2,"unit":"lb","section":"protein"},{"item":"yellow onion","qty":1,"unit":"whole","section":"produce"},{"item":"garlic cloves","qty":4,"unit":"whole","section":"produce"},{"item":"lime","qty":2,"unit":"whole","section":"produce"},{"item":"orange juice","qty":0.5,"unit":"cup","section":"pantry"},{"item":"corn tortillas","qty":8,"unit":"whole","section":"pantry"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"fresh cilantro","qty":0.25,"unit":"cup","section":"produce"},{"item":"cumin","qty":1,"unit":"tbsp","section":"spices"},{"item":"chili powder","qty":1,"unit":"tbsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
   {"id":"tuscan-white-bean-soup","name":"Tuscan White Bean Soup","mealType":["lunch","dinner"],"difficulty":"easy","cookTimeMinutes":30,"description":"A hearty, rustic Italian soup with white beans, kale, and garlic.","instructions":["Saute diced onion, carrots, and celery in olive oil until soft.","Add garlic, Italian seasoning, and red pepper flakes. Cook 1 min.","Add chicken broth and white beans. Simmer 15 min.","Stir in chopped kale, cook 5 min until wilted. Season with salt, pepper, and lemon juice."],"ingredients":[{"item":"white beans (canned)","qty":2,"unit":"can","section":"pantry"},{"item":"chicken broth","qty":4,"unit":"cup","section":"pantry"},{"item":"kale","qty":3,"unit":"cup","section":"produce"},{"item":"yellow onion","qty":1,"unit":"whole","section":"produce"},{"item":"carrots","qty":2,"unit":"whole","section":"produce"},{"item":"celery stalks","qty":2,"unit":"whole","section":"produce"},{"item":"garlic cloves","qty":4,"unit":"whole","section":"produce"},{"item":"Italian seasoning","qty":1,"unit":"tsp","section":"spices"},{"item":"lemon","qty":0.5,"unit":"whole","section":"produce"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
   {"id":"orange-chicken","name":"Orange Chicken","mealType":["dinner"],"difficulty":"moderate","cookTimeMinutes":30,"description":"Crispy chicken pieces in a sticky, tangy orange sauce over rice.","instructions":["Cut chicken into bite-sized pieces. Toss with cornstarch, salt, and pepper.","Pan-fry chicken in oil until golden and crispy, about 6 min. Set aside.","Make sauce: simmer orange juice, tamari, honey, garlic, ginger, and cornstarch until thickened.","Toss chicken in sauce. Serve over rice with steamed broccoli."],"ingredients":[{"item":"chicken breast","qty":1,"unit":"lb","section":"protein"},{"item":"cornstarch","qty":3,"unit":"tbsp","section":"pantry"},{"item":"orange juice","qty":0.5,"unit":"cup","section":"pantry"},{"item":"tamari (gluten-free soy sauce)","qty":2,"unit":"tbsp","section":"pantry"},{"item":"honey","qty":2,"unit":"tbsp","section":"pantry"},{"item":"garlic cloves","qty":3,"unit":"whole","section":"produce"},{"item":"fresh ginger","qty":1,"unit":"tbsp","section":"produce"},{"item":"broccoli florets","qty":2,"unit":"cup","section":"produce"},{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"olive oil","qty":3,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
-  {"id":"nicoise-salad","name":"Nicoise Salad","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"A classic French composed salad with tuna, green beans, potatoes, and eggs.","instructions":["Boil baby potatoes until tender, about 12 min. Halve.","Blanch green beans 3 min, then cool in ice water.","Hard-boil eggs, peel, and halve.","Arrange on a plate: greens, potatoes, green beans, eggs, tuna, olives. Drizzle with olive oil and lemon."],"ingredients":[{"item":"canned tuna","qty":2,"unit":"can","section":"pantry"},{"item":"baby potatoes","qty":0.5,"unit":"lb","section":"produce"},{"item":"green beans","qty":0.5,"unit":"lb","section":"produce"},{"item":"eggs","qty":2,"unit":"whole","section":"dairy"},{"item":"mixed salad greens","qty":3,"unit":"cup","section":"produce"},{"item":"Kalamata olives","qty":0.25,"unit":"cup","section":"pantry"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"},{"item":"lemon","qty":1,"unit":"whole","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}}
+  {"id":"nicoise-salad","name":"Nicoise Salad","mealType":["lunch"],"difficulty":"easy","cookTimeMinutes":20,"description":"A classic French composed salad with tuna, green beans, potatoes, and eggs.","instructions":["Boil baby potatoes until tender, about 12 min. Halve.","Blanch green beans 3 min, then cool in ice water.","Hard-boil eggs, peel, and halve.","Arrange on a plate: greens, potatoes, green beans, eggs, tuna, olives. Drizzle with olive oil and lemon."],"ingredients":[{"item":"canned tuna","qty":2,"unit":"can","section":"pantry"},{"item":"baby potatoes","qty":0.5,"unit":"lb","section":"produce"},{"item":"green beans","qty":0.5,"unit":"lb","section":"produce"},{"item":"eggs","qty":2,"unit":"whole","section":"dairy"},{"item":"mixed salad greens","qty":3,"unit":"cup","section":"produce"},{"item":"Kalamata olives","qty":0.25,"unit":"cup","section":"pantry"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"},{"item":"lemon","qty":1,"unit":"whole","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"banana-oat-pancakes","name":"Banana Oat Pancakes (GF)","mealType":["breakfast"],"difficulty":"easy","cookTimeMinutes":15,"description":"Fluffy pancakes made with GF oats and ripe bananas — no flour needed.","instructions":["Blend GF oats, banana, eggs, and a pinch of cinnamon in a blender until smooth.","Heat a non-stick skillet with a little oil over medium heat.","Pour small pancakes, cook 2-3 min per side until golden.","Serve with maple syrup and fresh berries."],"ingredients":[{"item":"GF rolled oats","qty":1,"unit":"cup","section":"pantry"},{"item":"banana","qty":2,"unit":"whole","section":"produce"},{"item":"eggs","qty":2,"unit":"whole","section":"dairy"},{"item":"cinnamon","qty":0.5,"unit":"tsp","section":"spices"},{"item":"maple syrup","qty":2,"unit":"tbsp","section":"pantry"},{"item":"fresh berries","qty":1,"unit":"cup","section":"produce"},{"item":"olive oil","qty":1,"unit":"tsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"veggie-egg-scramble","name":"Veggie Egg Scramble","mealType":["breakfast"],"difficulty":"easy","cookTimeMinutes":10,"description":"Quick scrambled eggs loaded with peppers, onion, and herbs.","instructions":["Dice bell pepper and onion. Saute in oil until softened, 3 min.","Whisk eggs with salt and pepper. Pour into the skillet.","Stir gently until eggs are just set.","Serve with avocado slices and GF toast if desired."],"ingredients":[{"item":"eggs","qty":4,"unit":"whole","section":"dairy"},{"item":"bell peppers","qty":1,"unit":"whole","section":"produce"},{"item":"yellow onion","qty":0.25,"unit":"whole","section":"produce"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"sweet-potato-hash","name":"Sweet Potato Breakfast Hash","mealType":["breakfast"],"difficulty":"easy","cookTimeMinutes":25,"description":"Crispy sweet potato hash with sausage and a fried egg on top.","instructions":["Dice sweet potato small. Cook in oil over medium-high heat, stirring occasionally, 12-15 min.","Add diced GF sausage, cook 5 min more.","Season with paprika, garlic powder, salt, and pepper.","Top each serving with a fried egg."],"ingredients":[{"item":"sweet potatoes","qty":2,"unit":"whole","section":"produce"},{"item":"Italian sausage (gluten-free)","qty":0.5,"unit":"lb","section":"protein"},{"item":"eggs","qty":2,"unit":"whole","section":"dairy"},{"item":"paprika","qty":0.5,"unit":"tsp","section":"spices"},{"item":"garlic powder","qty":0.5,"unit":"tsp","section":"spices"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"overnight-chia","name":"Overnight Chia Pudding","mealType":["breakfast","snack"],"difficulty":"easy","cookTimeMinutes":5,"description":"Creamy chia pudding you prep the night before — grab and go in the morning.","instructions":["Mix chia seeds with coconut milk, honey, and vanilla.","Stir well, then refrigerate overnight (at least 4 hours).","In the morning, stir and top with fresh fruit and nuts.","Keeps in the fridge for 3 days."],"ingredients":[{"item":"chia seeds","qty":0.25,"unit":"cup","section":"pantry"},{"item":"coconut milk (canned)","qty":0.75,"unit":"cup","section":"pantry"},{"item":"honey","qty":1,"unit":"tbsp","section":"pantry"},{"item":"fresh berries","qty":0.5,"unit":"cup","section":"produce"},{"item":"crushed peanuts","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"avocado-egg-toast","name":"Avocado & Egg on GF Toast","mealType":["breakfast"],"difficulty":"easy","cookTimeMinutes":10,"description":"Simple smashed avocado on GF toast with a perfectly runny egg.","instructions":["Toast GF bread.","Mash avocado with salt, pepper, and a squeeze of lemon.","Fry eggs sunny-side up in a little oil.","Spread avocado on toast, top with egg. Add red pepper flakes if you like."],"ingredients":[{"item":"GF bread","qty":2,"unit":"whole","section":"pantry"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"eggs","qty":2,"unit":"whole","section":"dairy"},{"item":"lemon","qty":0.5,"unit":"whole","section":"produce"},{"item":"olive oil","qty":1,"unit":"tsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"smoothie-bowl","name":"Berry Smoothie Bowl","mealType":["breakfast","snack"],"difficulty":"easy","cookTimeMinutes":5,"description":"Thick, creamy smoothie bowl topped with granola, fruit, and coconut.","instructions":["Blend frozen berries, banana, and a splash of coconut milk until thick and smooth.","Pour into a bowl.","Top with GF granola, sliced banana, shredded coconut, and a drizzle of honey.","Eat immediately."],"ingredients":[{"item":"frozen berries","qty":1.5,"unit":"cup","section":"frozen"},{"item":"banana","qty":1,"unit":"whole","section":"produce"},{"item":"coconut milk (canned)","qty":0.25,"unit":"cup","section":"pantry"},{"item":"GF granola","qty":0.25,"unit":"cup","section":"pantry"},{"item":"shredded coconut","qty":1,"unit":"tbsp","section":"pantry"},{"item":"honey","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"trail-mix-bites","name":"No-Bake Trail Mix Bites","mealType":["snack"],"difficulty":"easy","cookTimeMinutes":15,"description":"Chewy energy bites with oats, peanut butter, and chocolate chips — great for on the go.","instructions":["Mix GF oats, peanut butter, honey, chocolate chips, and a pinch of salt in a bowl.","Stir until everything is combined.","Roll into 12 small balls. Refrigerate 30 min to firm up.","Store in the fridge for up to a week."],"ingredients":[{"item":"GF rolled oats","qty":1,"unit":"cup","section":"pantry"},{"item":"peanut butter","qty":0.5,"unit":"cup","section":"pantry"},{"item":"honey","qty":3,"unit":"tbsp","section":"pantry"},{"item":"chocolate chips","qty":0.25,"unit":"cup","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"guacamole-chips","name":"Fresh Guacamole & Chips","mealType":["snack"],"difficulty":"easy","cookTimeMinutes":10,"description":"Classic homemade guacamole with tortilla chips — perfect for sharing.","instructions":["Mash avocados with a fork, leaving some chunks.","Mix in diced red onion, lime juice, cilantro, salt, and a pinch of cumin.","Serve immediately with GF tortilla chips."],"ingredients":[{"item":"avocado","qty":2,"unit":"whole","section":"produce"},{"item":"red onion","qty":0.25,"unit":"whole","section":"produce"},{"item":"lime","qty":1,"unit":"whole","section":"produce"},{"item":"fresh cilantro","qty":0.25,"unit":"cup","section":"produce"},{"item":"GF tortilla chips","qty":1,"unit":"bag","section":"pantry"},{"item":"cumin","qty":0.25,"unit":"tsp","section":"spices"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"apple-pb-snack","name":"Apple Slices with Peanut Butter","mealType":["snack"],"difficulty":"easy","cookTimeMinutes":5,"description":"The simplest snack — crisp apple slices with peanut butter and a drizzle of honey.","instructions":["Core and slice apples.","Serve with peanut butter for dipping.","Drizzle with honey and a sprinkle of cinnamon if desired."],"ingredients":[{"item":"apple","qty":2,"unit":"whole","section":"produce"},{"item":"peanut butter","qty":3,"unit":"tbsp","section":"pantry"},{"item":"honey","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"chocolate-avocado-mousse","name":"Chocolate Avocado Mousse","mealType":["dessert"],"difficulty":"easy","cookTimeMinutes":10,"description":"Rich, creamy chocolate mousse made with avocado — dairy-free and decadent.","instructions":["Blend ripe avocados, cocoa powder, honey, vanilla, and a pinch of salt until silky smooth.","Taste and adjust sweetness.","Spoon into small bowls. Refrigerate 30 min for best texture.","Top with fresh berries or shaved chocolate."],"ingredients":[{"item":"avocado","qty":2,"unit":"whole","section":"produce"},{"item":"cocoa powder","qty":0.25,"unit":"cup","section":"pantry"},{"item":"honey","qty":3,"unit":"tbsp","section":"pantry"},{"item":"fresh berries","qty":0.5,"unit":"cup","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"coconut-rice-pudding","name":"Coconut Rice Pudding","mealType":["dessert"],"difficulty":"easy","cookTimeMinutes":30,"description":"Warm, creamy rice pudding made with coconut milk and a hint of cinnamon.","instructions":["Combine cooked rice, coconut milk, honey, and cinnamon in a saucepan.","Simmer over low heat, stirring often, 15-20 min until thick and creamy.","Serve warm or chilled.","Top with toasted coconut and fresh mango if desired."],"ingredients":[{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"coconut milk (canned)","qty":1,"unit":"can","section":"pantry"},{"item":"honey","qty":3,"unit":"tbsp","section":"pantry"},{"item":"cinnamon","qty":0.5,"unit":"tsp","section":"spices"},{"item":"shredded coconut","qty":2,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"fruit-crisp","name":"Mixed Berry Crisp (GF)","mealType":["dessert"],"difficulty":"easy","cookTimeMinutes":40,"description":"Warm, bubbly berry crisp with a crunchy GF oat topping.","instructions":["Preheat oven to 350F. Toss berries with a little honey and cornstarch in a baking dish.","Make topping: mix GF oats, almond flour, honey, coconut oil, and cinnamon.","Spread topping over berries.","Bake 30-35 min until golden and bubbly."],"ingredients":[{"item":"frozen berries","qty":3,"unit":"cup","section":"frozen"},{"item":"GF rolled oats","qty":0.75,"unit":"cup","section":"pantry"},{"item":"almond flour","qty":0.25,"unit":"cup","section":"pantry"},{"item":"honey","qty":3,"unit":"tbsp","section":"pantry"},{"item":"coconut oil","qty":3,"unit":"tbsp","section":"pantry"},{"item":"cinnamon","qty":0.5,"unit":"tsp","section":"spices"},{"item":"cornstarch","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"peanut-butter-banana-ice","name":"Peanut Butter Banana Ice Cream","mealType":["dessert"],"difficulty":"easy","cookTimeMinutes":5,"description":"Two-ingredient frozen banana ice cream — blend and eat.","instructions":["Slice bananas and freeze at least 4 hours.","Blend frozen banana slices with peanut butter until smooth and creamy.","Scoop and serve immediately.","Top with chocolate chips or crushed peanuts if desired."],"ingredients":[{"item":"banana","qty":3,"unit":"whole","section":"produce"},{"item":"peanut butter","qty":2,"unit":"tbsp","section":"pantry"},{"item":"chocolate chips","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"roasted-garlic-potatoes","name":"Roasted Garlic Potatoes","mealType":["side"],"difficulty":"easy","cookTimeMinutes":35,"description":"Crispy roasted potatoes with garlic and herbs — goes with everything.","instructions":["Preheat oven to 425F. Cut potatoes into 1-inch cubes.","Toss with olive oil, minced garlic, salt, pepper, and dried rosemary.","Spread on a sheet pan in a single layer.","Roast 30-35 min, flipping halfway, until golden and crispy."],"ingredients":[{"item":"potatoes","qty":1.5,"unit":"lb","section":"produce"},{"item":"olive oil","qty":2,"unit":"tbsp","section":"pantry"},{"item":"garlic cloves","qty":4,"unit":"whole","section":"produce"},{"item":"fresh rosemary","qty":1,"unit":"tbsp","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"steamed-broccoli-lemon","name":"Steamed Broccoli with Lemon","mealType":["side"],"difficulty":"easy","cookTimeMinutes":10,"description":"Simple steamed broccoli brightened with lemon juice and olive oil.","instructions":["Steam broccoli florets until bright green and tender-crisp, about 5 min.","Toss with olive oil, lemon juice, salt, and pepper.","Serve immediately."],"ingredients":[{"item":"broccoli florets","qty":4,"unit":"cup","section":"produce"},{"item":"lemon","qty":0.5,"unit":"whole","section":"produce"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"cilantro-lime-rice","name":"Cilantro Lime Rice","mealType":["side"],"difficulty":"easy","cookTimeMinutes":20,"description":"Fluffy rice tossed with fresh cilantro and lime — the perfect side for any bowl.","instructions":["Cook rice per package directions.","Fluff with a fork. Stir in lime juice, lime zest, and chopped cilantro.","Season with salt to taste.","Serve alongside any protein or bowl."],"ingredients":[{"item":"white rice","qty":1,"unit":"cup","section":"pantry"},{"item":"lime","qty":2,"unit":"whole","section":"produce"},{"item":"fresh cilantro","qty":0.5,"unit":"cup","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"roasted-asparagus","name":"Roasted Asparagus","mealType":["side"],"difficulty":"easy","cookTimeMinutes":15,"description":"Simple oven-roasted asparagus with olive oil and a squeeze of lemon.","instructions":["Preheat oven to 425F. Trim woody ends off asparagus.","Toss with olive oil, salt, and pepper on a sheet pan.","Roast 10-12 min until tender with crispy tips.","Squeeze lemon over top before serving."],"ingredients":[{"item":"asparagus","qty":1,"unit":"bunch","section":"produce"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"},{"item":"lemon","qty":0.5,"unit":"whole","section":"produce"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"cucumber-avocado-salad","name":"Cucumber Avocado Salad","mealType":["side"],"difficulty":"easy","cookTimeMinutes":10,"description":"A cool, refreshing side salad with creamy avocado and crunchy cucumber.","instructions":["Dice cucumber and avocado.","Toss with red onion, lime juice, olive oil, and salt.","Add fresh cilantro and a pinch of cumin.","Serve immediately."],"ingredients":[{"item":"cucumber","qty":2,"unit":"whole","section":"produce"},{"item":"avocado","qty":1,"unit":"whole","section":"produce"},{"item":"red onion","qty":0.25,"unit":"whole","section":"produce"},{"item":"lime","qty":1,"unit":"whole","section":"produce"},{"item":"fresh cilantro","qty":0.25,"unit":"cup","section":"produce"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}},
+  {"id":"honey-glazed-carrots","name":"Honey Glazed Carrots","mealType":["side"],"difficulty":"easy","cookTimeMinutes":20,"description":"Sweet, tender carrots roasted with honey and a touch of thyme.","instructions":["Preheat oven to 400F. Peel and cut carrots into sticks.","Toss with olive oil, honey, salt, and fresh thyme.","Roast 18-20 min until tender and caramelized.","Serve warm."],"ingredients":[{"item":"carrots","qty":1,"unit":"lb","section":"produce"},{"item":"honey","qty":2,"unit":"tbsp","section":"pantry"},{"item":"olive oil","qty":1,"unit":"tbsp","section":"pantry"}],"flags":{"dairy":false,"tomatoes":false,"spinach":false}}
 ]
 </script>
 
@@ -1148,13 +1175,33 @@ const App = {
   db: null,
   dbRef: null,
   state: {
-    mealPlan: Array.from({ length: 7 }, () => ({ lunch: null, dinner: null })),
+    mealPlan: Array.from({ length: 7 }, () => ({ breakfast: [], lunch: [], dinner: [], snack: [], dessert: [] })),
     groceryList: [],
     groceryOverrides: { removed: [], added: [], checked: [] },
     filters: { mealType: 'all', difficulty: 'all', time: 'all', search: '' }
   },
   days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+  slots: ['breakfast', 'lunch', 'dinner', 'snack', 'dessert'],
+  slotLabels: { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack', dessert: 'Dessert' },
   syncing: false,
+
+  // Migrate old format (single recipe per slot) to new format (array per slot)
+  migrateMealPlan(plan) {
+    return plan.map(day => {
+      const migrated = {};
+      App.slots.forEach(slot => {
+        const val = day[slot];
+        if (Array.isArray(val)) {
+          migrated[slot] = val;
+        } else if (val && typeof val === 'string') {
+          migrated[slot] = [val]; // old format: single ID -> wrap in array
+        } else {
+          migrated[slot] = [];
+        }
+      });
+      return migrated;
+    });
+  },
 
   init() {
     this.recipes = JSON.parse(document.getElementById('recipe-data').textContent);
@@ -1171,7 +1218,7 @@ const App = {
     try {
       const saved = JSON.parse(localStorage.getItem('mealPlannerState'));
       if (saved) {
-        if (saved.mealPlan) this.state.mealPlan = saved.mealPlan;
+        if (saved.mealPlan) this.state.mealPlan = this.migrateMealPlan(saved.mealPlan);
         if (saved.groceryOverrides) this.state.groceryOverrides = saved.groceryOverrides;
       }
     } catch(e) {}
@@ -1217,7 +1264,7 @@ const App = {
         App.dbRef.on('value', (snapshot) => {
           const data = snapshot.val();
           if (data && !App.syncing) {
-            if (data.mealPlan) App.state.mealPlan = data.mealPlan;
+            if (data.mealPlan) App.state.mealPlan = App.migrateMealPlan(data.mealPlan);
             if (data.groceryOverrides) App.state.groceryOverrides = data.groceryOverrides;
             // Load custom recipes from Firebase
             if (data.customRecipes) {
@@ -1365,34 +1412,26 @@ const App = {
     render() {
       const grid = document.getElementById('week-grid');
       grid.innerHTML = App.days.map((day, i) => {
-        const lunch = App.state.mealPlan[i]?.lunch;
-        const dinner = App.state.mealPlan[i]?.dinner;
-        const lunchRecipe = lunch ? App.recipes.find(r => r.id === lunch) : null;
-        const dinnerRecipe = dinner ? App.recipes.find(r => r.id === dinner) : null;
-
         return `
           <div class="day-column">
             <div class="day-header">${day}</div>
-            <div class="meal-slot" data-day="${i}" data-slot="lunch">
-              <div class="slot-label">Lunch</div>
-              ${lunchRecipe ? `
-                <div class="slot-filled" onclick="App.showRecipeModal('${lunchRecipe.id}')">
-                  <button class="slot-remove" onclick="event.stopPropagation(); App.Planner.removeMeal(${i}, 'lunch')">&times;</button>
-                  <div class="recipe-name">${lunchRecipe.name}</div>
-                  <div class="recipe-time">${lunchRecipe.cookTimeMinutes} min</div>
-                </div>` : `
-                <div class="slot-empty">Drop a recipe here</div>`}
-            </div>
-            <div class="meal-slot" data-day="${i}" data-slot="dinner">
-              <div class="slot-label">Dinner</div>
-              ${dinnerRecipe ? `
-                <div class="slot-filled" onclick="App.showRecipeModal('${dinnerRecipe.id}')">
-                  <button class="slot-remove" onclick="event.stopPropagation(); App.Planner.removeMeal(${i}, 'dinner')">&times;</button>
-                  <div class="recipe-name">${dinnerRecipe.name}</div>
-                  <div class="recipe-time">${dinnerRecipe.cookTimeMinutes} min</div>
-                </div>` : `
-                <div class="slot-empty">Drop a recipe here</div>`}
-            </div>
+            ${App.slots.map(slot => {
+              const recipes = App.state.mealPlan[i]?.[slot] || [];
+              return `
+                <div class="meal-slot" data-day="${i}" data-slot="${slot}">
+                  <div class="slot-label">${App.slotLabels[slot]}</div>
+                  ${recipes.length > 0 ? recipes.map((rid, idx) => {
+                    const r = App.recipes.find(rec => rec.id === rid);
+                    if (!r) return '';
+                    return `
+                      <div class="slot-filled" style="margin-bottom:4px;" onclick="App.showRecipeModal('${r.id}')">
+                        <button class="slot-remove" onclick="event.stopPropagation(); App.Planner.removeMeal(${i}, '${slot}', ${idx})">&times;</button>
+                        <div class="recipe-name">${r.name}</div>
+                        <div class="recipe-time">${r.cookTimeMinutes} min</div>
+                      </div>`;
+                  }).join('') : `<div class="slot-empty">Drop here</div>`}
+                </div>`;
+            }).join('')}
           </div>`;
       }).join('');
 
@@ -1401,22 +1440,28 @@ const App = {
     },
 
     addMeal(day, slot, recipeId) {
-      App.state.mealPlan[day][slot] = recipeId;
+      if (!App.state.mealPlan[day][slot]) App.state.mealPlan[day][slot] = [];
+      // Don't add duplicates in same slot
+      if (!App.state.mealPlan[day][slot].includes(recipeId)) {
+        App.state.mealPlan[day][slot].push(recipeId);
+      }
       App.Firebase.save();
       this.render();
       const recipe = App.recipes.find(r => r.id === recipeId);
-      App.toast(`Added "${recipe.name}" to ${App.days[day]} ${slot}`);
+      App.toast(`Added "${recipe.name}" to ${App.days[day]} ${App.slotLabels[slot]}`);
     },
 
-    removeMeal(day, slot) {
-      App.state.mealPlan[day][slot] = null;
+    removeMeal(day, slot, index) {
+      if (App.state.mealPlan[day][slot]) {
+        App.state.mealPlan[day][slot].splice(index, 1);
+      }
       App.Firebase.save();
       this.render();
     },
 
     clearAll() {
       if (!confirm('Clear all meals from the week?')) return;
-      App.state.mealPlan = Array.from({ length: 7 }, () => ({ lunch: null, dinner: null }));
+      App.state.mealPlan = Array.from({ length: 7 }, () => ({ breakfast: [], lunch: [], dinner: [], snack: [], dessert: [] }));
       App.state.groceryOverrides = { removed: [], added: [], checked: [] };
       App.Firebase.save();
       this.render();
@@ -1427,15 +1472,15 @@ const App = {
       let dairyCount = 0, tomatoCount = 0, spinachCount = 0;
       App.state.mealPlan.forEach(day => {
         if (!day) return;
-        ['lunch', 'dinner'].forEach(slot => {
-          if (day[slot]) {
-            const r = App.recipes.find(rec => rec.id === day[slot]);
+        App.slots.forEach(slot => {
+          (day[slot] || []).forEach(rid => {
+            const r = App.recipes.find(rec => rec.id === rid);
             if (r) {
               if (r.flags.dairy) dairyCount++;
               if (r.flags.tomatoes) tomatoCount++;
               if (r.flags.spinach) spinachCount++;
             }
-          }
+          });
         });
       });
 
@@ -1544,13 +1589,13 @@ const App = {
       const items = [];
       App.state.mealPlan.forEach(day => {
         if (!day) return;
-        ['lunch', 'dinner'].forEach(slot => {
-          if (day[slot]) {
-            const recipe = App.recipes.find(r => r.id === day[slot]);
+        App.slots.forEach(slot => {
+          (day[slot] || []).forEach(rid => {
+            const recipe = App.recipes.find(r => r.id === rid);
             if (recipe) {
               recipe.ingredients.forEach(ing => items.push({ ...ing }));
             }
-          }
+          });
         });
       });
 
@@ -1846,7 +1891,7 @@ const App = {
       if (!name) { App.toast('Please enter a recipe name'); return; }
 
       const mealTypeVal = document.getElementById('ar-mealtype').value;
-      const mealType = mealTypeVal === 'both' ? ['lunch', 'dinner'] : [mealTypeVal];
+      const mealType = mealTypeVal === 'both' ? ['lunch', 'dinner'] : mealTypeVal === 'side' ? ['lunch', 'dinner', 'breakfast', 'snack'] : [mealTypeVal];
 
       const ingredientLines = document.getElementById('ar-ingredients').value.split('\n').filter(l => l.trim());
       const ingredients = ingredientLines.map(l => this.parseIngredientLine(l)).filter(Boolean);
@@ -1918,21 +1963,26 @@ const App = {
       let text = 'WEEKLY MEAL PLAN\n\n';
       App.days.forEach((day, i) => {
         text += `${day.toUpperCase()}\n`;
-        ['lunch', 'dinner'].forEach(slot => {
-          const recipeId = App.state.mealPlan[i]?.[slot];
-          if (recipeId) {
-            const r = App.recipes.find(rec => rec.id === recipeId);
-            text += `  ${slot.charAt(0).toUpperCase() + slot.slice(1)}: ${r.name} (${r.cookTimeMinutes} min)\n`;
-            text += `    Ingredients:\n`;
-            r.ingredients.forEach(ing => {
-              text += `      - ${App.Utils.formatQty(ing.qty)} ${ing.unit} ${ing.item}\n`;
-            });
-            text += `    Steps:\n`;
-            r.instructions.forEach((step, j) => {
-              text += `      ${j + 1}. ${step}\n`;
-            });
+        App.slots.forEach(slot => {
+          const recipeIds = App.state.mealPlan[i]?.[slot] || [];
+          text += `  ${App.slotLabels[slot]}:`;
+          if (recipeIds.length === 0) {
+            text += ' (empty)\n';
           } else {
-            text += `  ${slot.charAt(0).toUpperCase() + slot.slice(1)}: (empty)\n`;
+            text += '\n';
+            recipeIds.forEach(rid => {
+              const r = App.recipes.find(rec => rec.id === rid);
+              if (!r) return;
+              text += `    ${r.name} (${r.cookTimeMinutes} min)\n`;
+              text += `      Ingredients:\n`;
+              r.ingredients.forEach(ing => {
+                text += `        - ${App.Utils.formatQty(ing.qty)} ${ing.unit} ${ing.item}\n`;
+              });
+              text += `      Steps:\n`;
+              r.instructions.forEach((step, j) => {
+                text += `        ${j + 1}. ${step}\n`;
+              });
+            });
           }
         });
         text += '\n';
@@ -1985,13 +2035,16 @@ const App = {
       <div class="slot-picker">`;
 
     App.days.forEach((day, i) => {
-      ['lunch', 'dinner'].forEach(slot => {
-        const existing = App.state.mealPlan[i]?.[slot];
-        const existingRecipe = existing ? App.recipes.find(rec => rec.id === existing) : null;
-        const label = `${day} ${slot.charAt(0).toUpperCase() + slot.slice(1)}`;
+      App.slots.forEach(slot => {
+        const existing = App.state.mealPlan[i]?.[slot] || [];
+        const existingNames = existing.map(rid => {
+          const rec = App.recipes.find(re => re.id === rid);
+          return rec ? rec.name : '';
+        }).filter(Boolean);
+        const label = `${day} ${App.slotLabels[slot]}`;
 
-        if (existingRecipe) {
-          html += `<button class="slot-pick-btn occupied" onclick="App.Planner.addMeal(${i}, '${slot}', '${recipeId}'); App.closeModal();" title="Replace: ${existingRecipe.name}">${label}<br><small style="color:#999">${existingRecipe.name}</small></button>`;
+        if (existingNames.length) {
+          html += `<button class="slot-pick-btn occupied" onclick="App.Planner.addMeal(${i}, '${slot}', '${recipeId}'); App.closeModal();">${label}<br><small style="color:#999">${existingNames.join(' + ')}</small></button>`;
         } else {
           html += `<button class="slot-pick-btn" onclick="App.Planner.addMeal(${i}, '${slot}', '${recipeId}'); App.closeModal();">${label}</button>`;
         }
