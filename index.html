@@ -708,6 +708,42 @@ body {
 .slot-pick-btn:hover { background: var(--sage-light); border-color: var(--sage); }
 .slot-pick-btn.occupied { background: #f0f0f0; color: var(--text-light); }
 
+/* ===== WEEK HISTORY ===== */
+.history-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.history-item:hover { background: #f8f9fa; }
+
+.history-date {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.history-summary {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  flex: 1;
+  margin: 0 16px;
+}
+
+.history-actions { display: flex; gap: 6px; }
+
+.history-empty {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  padding: 20px 0;
+  text-align: center;
+}
+
 /* ===== ADD RECIPE FORM ===== */
 .add-recipe-form { max-width: 600px; margin: 0 auto; }
 
@@ -1053,7 +1089,15 @@ body {
       <h2>Weekly Meal Plan</h2>
       <div class="planner-actions">
         <button class="btn btn-secondary" onclick="App.Planner.clearAll()">Clear Week</button>
+        <button class="btn btn-secondary" onclick="App.History.saveWeek()">Save & Start New Week</button>
+        <button class="btn btn-secondary" onclick="App.History.toggle()">Past Weeks</button>
         <button class="btn btn-primary" onclick="App.switchTab('grocery'); App.GroceryList.generate();">Build Grocery List</button>
+      </div>
+    </div>
+    <div id="week-history" style="display:none;margin-bottom:20px;">
+      <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;">
+        <h3 style="color:var(--sage-dark);margin-bottom:12px;">Past Weeks</h3>
+        <div id="history-list"></div>
       </div>
     </div>
     <div id="week-grid" class="week-grid"></div>
@@ -1273,10 +1317,15 @@ const App = {
                   App.recipes.push(r);
                 }
               });
-              // Also save to localStorage
               const allCustom = Object.values(data.customRecipes);
               localStorage.setItem('customRecipes', JSON.stringify(allCustom));
               App.RecipeBrowser.render();
+            }
+            // Sync week history
+            if (data.weekHistory) {
+              const history = Object.values(data.weekHistory).sort((a, b) => b.timestamp - a.timestamp);
+              localStorage.setItem('weekHistory', JSON.stringify(history));
+              if (App.History.visible) App.History.render();
             }
             App.Planner.render();
             if (document.querySelector('#view-grocery.active')) {
@@ -1712,6 +1761,166 @@ const App = {
       }
       App.Firebase.save();
       this.render();
+    }
+  },
+
+  // ===== WEEK HISTORY =====
+  History: {
+    visible: false,
+
+    toggle() {
+      this.visible = !this.visible;
+      document.getElementById('week-history').style.display = this.visible ? 'block' : 'none';
+      if (this.visible) this.render();
+    },
+
+    saveWeek() {
+      // Check if the plan has any meals
+      const hasMeals = App.state.mealPlan.some(day =>
+        App.slots.some(slot => (day[slot] || []).length > 0)
+      );
+      if (!hasMeals) {
+        App.toast('Nothing to save — plan some meals first!');
+        return;
+      }
+
+      if (!confirm('Save this week and start a fresh plan?')) return;
+
+      const now = new Date();
+      const weekLabel = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+      // Count meals for summary
+      let mealCount = 0;
+      const recipeNames = [];
+      App.state.mealPlan.forEach(day => {
+        App.slots.forEach(slot => {
+          (day[slot] || []).forEach(rid => {
+            mealCount++;
+            const r = App.recipes.find(rec => rec.id === rid);
+            if (r && !recipeNames.includes(r.name)) recipeNames.push(r.name);
+          });
+        });
+      });
+
+      const entry = {
+        id: 'week-' + Date.now(),
+        date: weekLabel,
+        timestamp: Date.now(),
+        mealPlan: JSON.parse(JSON.stringify(App.state.mealPlan)),
+        summary: `${mealCount} meals — ${recipeNames.slice(0, 4).join(', ')}${recipeNames.length > 4 ? '...' : ''}`
+      };
+
+      // Save to Firebase
+      if (App.dbRef) {
+        App.dbRef.child('weekHistory').child(entry.id).set(entry);
+      }
+
+      // Save to localStorage
+      const history = JSON.parse(localStorage.getItem('weekHistory') || '[]');
+      history.unshift(entry);
+      localStorage.setItem('weekHistory', JSON.stringify(history));
+
+      // Clear the current week
+      App.state.mealPlan = Array.from({ length: 7 }, () => ({ breakfast: [], lunch: [], dinner: [], snack: [], dessert: [] }));
+      App.state.groceryOverrides = { removed: [], added: [], checked: [] };
+      App.Firebase.save();
+      App.Planner.render();
+      App.toast(`Week of ${weekLabel} saved!`);
+
+      if (this.visible) this.render();
+    },
+
+    getHistory() {
+      try {
+        return JSON.parse(localStorage.getItem('weekHistory') || '[]');
+      } catch(e) { return []; }
+    },
+
+    render() {
+      const history = this.getHistory();
+      const container = document.getElementById('history-list');
+
+      if (history.length === 0) {
+        container.innerHTML = '<div class="history-empty">No saved weeks yet. Plan your meals and click "Save & Start New Week" to build your history.</div>';
+        return;
+      }
+
+      container.innerHTML = history.map(entry => `
+        <div class="history-item">
+          <span class="history-date">${entry.date}</span>
+          <span class="history-summary">${entry.summary}</span>
+          <div class="history-actions">
+            <button class="btn btn-secondary" style="padding:6px 12px;font-size:0.82rem;" onclick="App.History.reuse('${entry.id}')">Reuse Plan</button>
+            <button class="btn btn-secondary" style="padding:6px 12px;font-size:0.82rem;" onclick="App.History.viewDetail('${entry.id}')">View</button>
+            <button style="border:none;background:none;color:#ccc;cursor:pointer;font-size:1.1rem;padding:4px;" onclick="App.History.remove('${entry.id}')">&times;</button>
+          </div>
+        </div>
+      `).join('');
+    },
+
+    reuse(entryId) {
+      const history = this.getHistory();
+      const entry = history.find(h => h.id === entryId);
+      if (!entry) return;
+
+      if (!confirm('Load this week\\'s plan? This will replace your current plan.')) return;
+
+      App.state.mealPlan = App.migrateMealPlan(entry.mealPlan);
+      App.state.groceryOverrides = { removed: [], added: [], checked: [] };
+      App.Firebase.save();
+      App.Planner.render();
+      this.visible = false;
+      document.getElementById('week-history').style.display = 'none';
+      App.toast(`Loaded plan from ${entry.date}`);
+    },
+
+    viewDetail(entryId) {
+      const history = this.getHistory();
+      const entry = history.find(h => h.id === entryId);
+      if (!entry) return;
+
+      const plan = App.migrateMealPlan(entry.mealPlan);
+
+      let html = `
+        <button class="modal-close" onclick="App.closeModal()">&times;</button>
+        <h3>Week of ${entry.date}</h3>
+        <div style="margin-top:16px;">`;
+
+      App.days.forEach((day, i) => {
+        const daySlots = plan[i];
+        const hasAny = App.slots.some(s => (daySlots[s] || []).length > 0);
+        if (!hasAny) return;
+
+        html += `<div style="margin-bottom:12px;"><strong>${day}</strong><br>`;
+        App.slots.forEach(slot => {
+          (daySlots[slot] || []).forEach(rid => {
+            const r = App.recipes.find(rec => rec.id === rid);
+            if (r) html += `<span style="font-size:0.88rem;color:var(--text-light);">${App.slotLabels[slot]}: ${r.name}</span><br>`;
+          });
+        });
+        html += '</div>';
+      });
+
+      html += `</div>
+        <button class="btn btn-primary" style="margin-top:10px;" onclick="App.History.reuse('${entryId}'); App.closeModal();">Reuse This Plan</button>`;
+
+      document.getElementById('modal-content').innerHTML = html;
+      document.getElementById('modal-overlay').classList.add('active');
+    },
+
+    remove(entryId) {
+      if (!confirm('Delete this saved week?')) return;
+      let history = this.getHistory();
+      history = history.filter(h => h.id !== entryId);
+      localStorage.setItem('weekHistory', JSON.stringify(history));
+
+      // Remove from Firebase too
+      if (App.dbRef) {
+        App.dbRef.child('weekHistory').child(entryId).remove();
+      }
+
+      this.render();
+      App.toast('Week removed');
     }
   },
 
