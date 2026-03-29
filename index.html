@@ -708,6 +708,52 @@ body {
 .slot-pick-btn:hover { background: var(--sage-light); border-color: var(--sage); }
 .slot-pick-btn.occupied { background: #f0f0f0; color: var(--text-light); }
 
+/* ===== SERVINGS CONTROLS ===== */
+.servings-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.servings-row span {
+  font-size: 0.72rem;
+  color: var(--text-light);
+}
+
+.servings-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--white);
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  padding: 0;
+}
+
+.servings-btn:hover { background: var(--sage-light); color: var(--sage-dark); }
+
+.leftover-marker {
+  background: #fff3e0;
+  border: 1px dashed #ffb74d;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #e65100;
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.leftover-marker .slot-remove {
+  background: rgba(0,0,0,0.08);
+}
+
 /* ===== WEEK HISTORY ===== */
 .history-item {
   border: 1px solid var(--border);
@@ -1320,6 +1366,7 @@ const App = {
     mealPlan: Array.from({ length: 7 }, () => ({ breakfast: [], lunch: [], dinner: [], snack: [], dessert: [] })),
     groceryList: [],
     groceryOverrides: { removed: [], added: [], checked: [] },
+    servings: {},  // "dayIdx-slot-recipeIdx" -> number of servings (default 2)
     filters: { mealType: 'all', difficulty: 'all', time: 'all', cuisine: 'all', search: '' }
   },
   days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
@@ -1362,6 +1409,7 @@ const App = {
       if (saved) {
         if (saved.mealPlan) this.state.mealPlan = this.migrateMealPlan(saved.mealPlan);
         if (saved.groceryOverrides) this.state.groceryOverrides = saved.groceryOverrides;
+        if (saved.servings) this.state.servings = saved.servings;
       }
     } catch(e) {}
     // Always start the app immediately
@@ -1408,6 +1456,7 @@ const App = {
           if (data && !App.syncing) {
             if (data.mealPlan) App.state.mealPlan = App.migrateMealPlan(data.mealPlan);
             if (data.groceryOverrides) App.state.groceryOverrides = data.groceryOverrides;
+            if (data.servings) App.state.servings = data.servings;
             // Load custom recipes from Firebase
             if (data.customRecipes) {
               Object.values(data.customRecipes).forEach(r => {
@@ -1444,7 +1493,8 @@ const App = {
       // Always save to localStorage as backup
       localStorage.setItem('mealPlannerState', JSON.stringify({
         mealPlan: App.state.mealPlan,
-        groceryOverrides: App.state.groceryOverrides
+        groceryOverrides: App.state.groceryOverrides,
+        servings: App.state.servings
       }));
       // Sync to Firebase if connected
       if (!App.dbRef) return;
@@ -1453,6 +1503,7 @@ const App = {
       App.dbRef.set({
         mealPlan: App.state.mealPlan,
         groceryOverrides: App.state.groceryOverrides,
+        servings: App.state.servings || {},
         lastUpdated: Date.now()
       }).then(() => {
         App.syncing = false;
@@ -1558,6 +1609,19 @@ const App = {
 
   // ===== PLANNER =====
   Planner: {
+    getServings(day, slot, idx) {
+      const key = `${day}-${slot}-${idx}`;
+      return App.state.servings[key] || 2;
+    },
+
+    setServings(day, slot, idx, val) {
+      const key = `${day}-${slot}-${idx}`;
+      val = Math.max(1, Math.min(12, val));
+      App.state.servings[key] = val;
+      App.Firebase.save();
+      this.render();
+    },
+
     render() {
       const grid = document.getElementById('week-grid');
       grid.innerHTML = App.days.map((day, i) => {
@@ -1570,15 +1634,28 @@ const App = {
                 <div class="meal-slot" data-day="${i}" data-slot="${slot}">
                   <div class="slot-label">${App.slotLabels[slot]}</div>
                   ${recipes.length > 0 ? recipes.map((rid, idx) => {
+                    if (rid === '__leftovers__') {
+                      return `
+                        <div class="leftover-marker">
+                          <button class="slot-remove" onclick="App.Planner.removeMeal(${i}, '${slot}', ${idx})">&times;</button>
+                          Leftovers
+                        </div>`;
+                    }
                     const r = App.recipes.find(rec => rec.id === rid);
                     if (!r) return '';
+                    const srv = this.getServings(i, slot, idx);
                     return `
                       <div class="slot-filled" style="margin-bottom:4px;" onclick="App.showRecipeModal('${r.id}')">
                         <button class="slot-remove" onclick="event.stopPropagation(); App.Planner.removeMeal(${i}, '${slot}', ${idx})">&times;</button>
                         <div class="recipe-name">${r.name}</div>
-                        <div class="recipe-time">${r.cookTimeMinutes} min</div>
+                        <div class="servings-row" onclick="event.stopPropagation();">
+                          <button class="servings-btn" onclick="App.Planner.setServings(${i},'${slot}',${idx},${srv - 1})">-</button>
+                          <span>${srv} servings</span>
+                          <button class="servings-btn" onclick="App.Planner.setServings(${i},'${slot}',${idx},${srv + 1})">+</button>
+                        </div>
                       </div>`;
                   }).join('') : `<div class="slot-empty">Drop here</div>`}
+                  ${(slot === 'lunch' || slot === 'snack') && recipes.length === 0 ? `<button style="border:none;background:none;color:#e65100;font-size:0.78rem;cursor:pointer;margin-top:4px;" onclick="App.Planner.addLeftovers(${i},'${slot}')">+ Leftovers</button>` : ''}
                 </div>`;
             }).join('')}
           </div>`;
@@ -1588,9 +1665,16 @@ const App = {
       this.checkReduceWarnings();
     },
 
+    addLeftovers(day, slot) {
+      if (!App.state.mealPlan[day][slot]) App.state.mealPlan[day][slot] = [];
+      App.state.mealPlan[day][slot].push('__leftovers__');
+      App.Firebase.save();
+      this.render();
+      App.toast(`Marked ${App.days[day]} ${App.slotLabels[slot]} as leftovers`);
+    },
+
     addMeal(day, slot, recipeId) {
       if (!App.state.mealPlan[day][slot]) App.state.mealPlan[day][slot] = [];
-      // Don't add duplicates in same slot
       if (!App.state.mealPlan[day][slot].includes(recipeId)) {
         App.state.mealPlan[day][slot].push(recipeId);
       }
@@ -1736,13 +1820,16 @@ const App = {
   GroceryList: {
     generate() {
       const items = [];
-      App.state.mealPlan.forEach(day => {
+      App.state.mealPlan.forEach((day, dayIdx) => {
         if (!day) return;
         App.slots.forEach(slot => {
-          (day[slot] || []).forEach(rid => {
+          (day[slot] || []).forEach((rid, idx) => {
+            if (rid === '__leftovers__') return; // skip leftovers
             const recipe = App.recipes.find(r => r.id === rid);
             if (recipe) {
-              recipe.ingredients.forEach(ing => items.push({ ...ing }));
+              const servings = App.Planner.getServings(dayIdx, slot, idx);
+              const multiplier = servings / 2; // recipes are written for 2
+              recipe.ingredients.forEach(ing => items.push({ ...ing, qty: ing.qty * multiplier }));
             }
           });
         });
