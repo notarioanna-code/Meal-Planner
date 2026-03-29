@@ -946,7 +946,18 @@ const App = {
 
   init() {
     this.recipes = JSON.parse(document.getElementById('recipe-data').textContent);
-    this.Setup.checkExisting();
+    // Load any saved state from localStorage first
+    try {
+      const saved = JSON.parse(localStorage.getItem('mealPlannerState'));
+      if (saved) {
+        if (saved.mealPlan) this.state.mealPlan = saved.mealPlan;
+        if (saved.groceryOverrides) this.state.groceryOverrides = saved.groceryOverrides;
+      }
+    } catch(e) {}
+    // Always start the app immediately
+    this.startApp();
+    // Then try to connect Firebase for sync
+    this.Firebase.tryConnect();
   },
 
   startApp() {
@@ -961,26 +972,20 @@ const App = {
     this.DragDrop.init();
   },
 
-  // ===== SETUP =====
-  Setup: {
-    checkExisting() {
-      const config = {
-        apiKey: "AIzaSyB6KGQ-0xv0Pa4h-9Q71jTZaflFp-2Hav4",
-        authDomain: "meal-planner-8c79d.firebaseapp.com",
-        databaseURL: "https://meal-planner-8c79d-default-rtdb.firebaseio.com",
-        projectId: "meal-planner-8c79d",
-        storageBucket: "meal-planner-8c79d.firebasestorage.app",
-        messagingSenderId: "36264486627",
-        appId: "1:36264486627:web:e2f8019587cff02a7187d6"
-      };
-      App.Firebase.connect(config);
-    }
-  },
-
   // ===== FIREBASE =====
   Firebase: {
-    connect(config) {
+    tryConnect() {
       try {
+        const config = {
+          apiKey: "AIzaSyB6KGQ-0xv0Pa4h-9Q71jTZaflFp-2Hav4",
+          authDomain: "meal-planner-8c79d.firebaseapp.com",
+          databaseURL: "https://meal-planner-8c79d-default-rtdb.firebaseio.com",
+          projectId: "meal-planner-8c79d",
+          storageBucket: "meal-planner-8c79d.firebasestorage.app",
+          messagingSenderId: "36264486627",
+          appId: "1:36264486627:web:e2f8019587cff02a7187d6"
+        };
+
         if (!firebase.apps.length) {
           firebase.initializeApp(config);
         }
@@ -1001,20 +1006,20 @@ const App = {
           App.Firebase.setStatus('connected');
         });
 
-        App.dbRef.child('.info/connected').on('value', () => {});
         App.Firebase.setStatus('connected');
-        App.startApp();
       } catch(e) {
         console.error('Firebase error:', e);
-        localStorage.removeItem('mealPlannerFirebaseConfig');
-        document.getElementById('setup-screen').style.display = 'block';
-        const errorEl = document.getElementById('setup-error');
-        errorEl.textContent = 'Connection failed: ' + e.message;
-        errorEl.style.display = 'block';
+        App.Firebase.setStatus('offline');
       }
     },
 
     save() {
+      // Always save to localStorage as backup
+      localStorage.setItem('mealPlannerState', JSON.stringify({
+        mealPlan: App.state.mealPlan,
+        groceryOverrides: App.state.groceryOverrides
+      }));
+      // Sync to Firebase if connected
       if (!App.dbRef) return;
       App.syncing = true;
       App.Firebase.setStatus('syncing');
@@ -1027,7 +1032,7 @@ const App = {
         App.Firebase.setStatus('connected');
       }).catch((e) => {
         App.syncing = false;
-        App.Firebase.setStatus('error');
+        App.Firebase.setStatus('offline');
         console.error('Save error:', e);
       });
     },
