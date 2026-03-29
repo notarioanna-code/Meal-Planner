@@ -2082,7 +2082,7 @@ const App = {
       const entry = history.find(h => h.id === entryId);
       if (!entry) return;
 
-      if (!confirm('Load this week\\'s plan? This will replace your current plan.')) return;
+      if (!confirm('Load this week\'s plan? This will replace your current plan.')) return;
 
       App.state.mealPlan = App.migrateMealPlan(entry.mealPlan);
       App.state.groceryOverrides = { removed: [], added: [], checked: [] };
