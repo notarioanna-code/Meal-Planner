@@ -257,7 +257,6 @@ body {
   border-radius: var(--radius);
   padding: 18px;
   box-shadow: var(--shadow);
-  cursor: grab;
   transition: transform 0.15s, box-shadow 0.15s;
   border: 2px solid transparent;
   position: relative;
@@ -1582,7 +1581,7 @@ const App = {
         if (r.flags.spinach) flags.push('Spinach');
 
         return `
-          <div class="recipe-card" draggable="true" data-recipe-id="${r.id}">
+          <div class="recipe-card" data-recipe-id="${r.id}">
             <div class="recipe-card-header">
               <div class="recipe-name">${r.name}</div>
               <div class="recipe-badges">
@@ -1734,86 +1733,9 @@ const App = {
 
   // ===== DRAG AND DROP =====
   DragDrop: {
-    draggedId: null,
-
-    init() { this.initTouch(); },
-
-    bindCards() {
-      document.querySelectorAll('.recipe-card[draggable]').forEach(card => {
-        card.addEventListener('dragstart', (e) => {
-          this.draggedId = card.dataset.recipeId;
-          card.classList.add('dragging');
-          e.dataTransfer.setData('text/plain', card.dataset.recipeId);
-          e.dataTransfer.effectAllowed = 'copy';
-        });
-        card.addEventListener('dragend', () => {
-          card.classList.remove('dragging');
-          this.draggedId = null;
-        });
-      });
-    },
-
-    bindSlots() {
-      document.querySelectorAll('.meal-slot').forEach(slot => {
-        slot.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'copy';
-          slot.classList.add('drag-over');
-        });
-        slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
-        slot.addEventListener('drop', (e) => {
-          e.preventDefault();
-          slot.classList.remove('drag-over');
-          const recipeId = e.dataTransfer.getData('text/plain');
-          if (recipeId) {
-            App.Planner.addMeal(parseInt(slot.dataset.day), slot.dataset.slot, recipeId);
-          }
-        });
-      });
-    },
-
-    initTouch() {
-      let touchClone = null;
-      let touchRecipeId = null;
-
-      document.addEventListener('touchstart', (e) => {
-        const card = e.target.closest('.recipe-card[draggable]');
-        if (!card) return;
-        touchRecipeId = card.dataset.recipeId;
-      }, { passive: true });
-
-      document.addEventListener('touchmove', (e) => {
-        if (!touchRecipeId) return;
-        e.preventDefault();
-        const touch = e.touches[0];
-        if (!touchClone) {
-          const card = document.querySelector(`[data-recipe-id="${touchRecipeId}"]`);
-          touchClone = card.cloneNode(true);
-          touchClone.style.cssText = 'position:fixed;z-index:999;pointer-events:none;opacity:0.8;width:200px;transform:rotate(3deg);';
-          document.body.appendChild(touchClone);
-        }
-        touchClone.style.left = (touch.clientX - 100) + 'px';
-        touchClone.style.top = (touch.clientY - 30) + 'px';
-
-        document.querySelectorAll('.meal-slot').forEach(s => s.classList.remove('drag-over'));
-        const el = document.elementFromPoint(touch.clientX, touch.clientY);
-        const slot = el?.closest('.meal-slot');
-        if (slot) slot.classList.add('drag-over');
-      }, { passive: false });
-
-      document.addEventListener('touchend', (e) => {
-        if (!touchRecipeId) return;
-        if (touchClone) { document.body.removeChild(touchClone); touchClone = null; }
-        const touch = e.changedTouches[0];
-        const el = document.elementFromPoint(touch.clientX, touch.clientY);
-        const slot = el?.closest('.meal-slot');
-        if (slot) {
-          slot.classList.remove('drag-over');
-          App.Planner.addMeal(parseInt(slot.dataset.day), slot.dataset.slot, touchRecipeId);
-        }
-        touchRecipeId = null;
-      });
-    }
+    init() {},
+    bindCards() {},
+    bindSlots() {}
   },
 
   // ===== GROCERY LIST =====
